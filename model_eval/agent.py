@@ -62,19 +62,6 @@ class Agent:
                 quantization_config=bnb_config,
             ).eval()
 
-        elif "blip" in model_name:
-            self.processor = BlipProcessor.from_pretrained(
-                "Salesforce/blip-image-captioning-base", trust_remote_code=True
-            )
-            self.model = BlipForConditionalGeneration.from_pretrained(
-                "Salesforce/blip-image-captioning-base",
-                trust_remote_code=True,
-                device_map="auto",
-                torch_dtype=(
-                    torch.bfloat16 if torch.cuda.is_available() else torch.float32
-                ),
-            ).eval()
-
         elif "Qwen2.5-Omni-7B" in self.model_name.lower() or "Qwen-VL-Max" in self.model_name.lower():
 
             if "omni" in model_name.lower():
@@ -120,47 +107,6 @@ class Agent:
                 ),
             ).eval()
 
-        elif "llama" in model_name.lower():
-            self.together_api_key = os.getenv(
-                "TOGETHER_API_KEY"
-            )
-
-            # model_id = "meta-llama/Llama-4-Scout-17B-16E-Instruct"
-            # self.processor = AutoProcessor.from_pretrained(
-            #     model_id, trust_remote_code=True
-            # )
-            # self.model = Llama4ForConditionalGeneration.from_pretrained(
-            #     model_id,
-            #     trust_remote_code=True,
-            #     attn_implementation="flex_attention",
-            #     device_map="auto",
-            #     torch_dtype=(
-            #         torch.bfloat16 if torch.cuda.is_available() else torch.float32
-            #     ),
-            # ).eval()
-
-        elif "gemma" in model_name:
-            self.together_api_key = os.getenv(
-                "TOGETHER_API_KEY"
-            )
-
-            # if "4b" in model_name:
-            #     model_id = "google/gemma-3-4b-it"
-            # else:
-            #     model_id = "google/gemma-3-27b-it"
-
-            # self.processor = AutoProcessor.from_pretrained(
-            #     model_id, trust_remote_code=True
-            # )
-            # self.model = Gemma3ForConditionalGeneration.from_pretrained(
-            #     model_id,
-            #     trust_remote_code=True,
-            #     device_map="auto",
-            #     torch_dtype=(
-            #         torch.bfloat16 if torch.cuda.is_available() else torch.float32
-            #     ),
-            # ).eval()
-
         elif "qwen" in model_name.lower():
             self.together_api_key = os.getenv(
                 "TOGETHER_API_KEY"
@@ -175,7 +121,7 @@ class Agent:
             raise ValueError(f"Unsupported model: {model_name}")
 
     def _is_base64(self, s):
-        """判断字符串是否是base64编码"""
+        """check if inputs are base64 encoded"""
         if not isinstance(s, str) or len(s) < 100:
             return False
         try:
@@ -354,73 +300,6 @@ class Agent:
 
             return result
 
-        # elif "llama" in self.model_name.lower():
-        #     messages = [
-        #         {
-        #             "role": "user",
-        #             "content": [
-        #                 {"type": "image", "image": image},
-        #                 {"type": "text", "text": prompt},
-        #             ],
-        #         },
-        #     ]
-
-        #     inputs = self.processor.apply_chat_template(
-        #         messages,
-        #         add_generation_prompt=True,
-        #         tokenize=True,
-        #         return_dict=True,
-        #         return_tensors="pt",
-        #     ).to(
-        #         self.device,
-        #         torch.bfloat16 if torch.cuda.is_available() else torch.float32,
-        #     )
-        #     with torch.no_grad():
-        #         output = self.model.generate(**inputs, max_new_tokens=2048)
-
-        #     result = self.processor.tokenizer.decode(
-        #         output[0], skip_special_tokens=True
-        #     )
-        #     return result
-
-        # elif "gemma" in self.model_name:
-        #     messages = [
-        #         {
-        #             "role": "system",
-        #             "content": [
-        #                 {"type": "text", "text": "You are a helpful assistant."}
-        #             ],
-        #         },
-        #         {
-        #             "role": "user",
-        #             "content": [
-        #                 {"type": "image", "image": image_path},
-        #                 {"type": "text", "text": prompt},
-        #             ],
-        #         },
-        #     ]
-
-        #     inputs = self.processor.apply_chat_template(
-        #         messages,
-        #         add_generation_prompt=True,
-        #         tokenize=True,
-        #         return_dict=True,
-        #         return_tensors="pt",
-        #     ).to(
-        #         self.model.device,
-        #         torch.bfloat16 if torch.cuda.is_available() else torch.float32,
-        #     )
-
-        #     with torch.no_grad():
-        #         output = self.model.generate(**inputs, max_new_tokens=2048)
-
-        #     decoded = processor.decode(generation, skip_special_tokens=True)
-
-        #     result = self.processor.tokenizer.decode(
-        #         output[0], skip_special_tokens=True
-        #     )
-        #     return result
-
         elif "gpt-4o" in self.model_name or "gpt-5" in self.model_name:
             if local_version:
                 if self._is_base64(image_path):
@@ -522,48 +401,3 @@ class Agent:
                 max_tokens=2048,
             )
             return response.choices[0].message.content
-
-        # elif "qwen" in self.model_name.lower():
-        #     if local_version:
-        #         buffered = io.BytesIO()
-        #         image.save(buffered, format="PNG")
-        #         img_bytes = buffered.getvalue()
-        #         b64_image = base64.b64encode(img_bytes).decode("utf-8")
-        #     else:
-        #         b64_image = image_path
-            
-        #     client = OpenAI(
-        #         api_key=self.openai_api_key,
-        #         base_url="https://dashscope.aliyuncs.com/compatible-mode/v1",
-        #     )
-        #     response = client.chat.completions.create(
-        #         model="qwen-omni-turbo",
-        #         messages=[
-        #             {
-        #                 "role": "system",
-        #                 "content": "You are Qwen, a virtual human developed by the Qwen Team, Alibaba Group, capable of perceiving auditory and visual inputs, as well as generating text and speech.",
-        #             },
-        #             {
-        #                 "role": "user",
-        #                 "content": [
-        #                     {
-        #                         "type": "image_url", 
-        #                         "image_url": {
-        #                             "url": f"data:image/png;base64,{b64_image}"
-        #                         },
-        #                     },
-        #                     {"type": "text", "text": prompt},
-        #                 ],
-        #             },
-        #         ],
-        #         modalities=["text", "image"],
-        #         stream=True,
-        #         stream_options={"include_usage": True},
-        #         max_tokens=2048,
-        #     )
-        #     text = []
-        #     for chunk in response:
-        #         content = chunk.choices[0].content
-        #         if content:
-        #             text.append(content)
-        #     return "".join(text)
