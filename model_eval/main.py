@@ -104,7 +104,7 @@ def main():
                     experiment_tag="zero-shot",
                     language=language,
                     local_version = True, 
-                    local_dir = "/gpfs/radev/project/xu_hua/xp83/OCR_Task", 
+                    local_dir = "./FinCritialED", 
                     sample = 1000
                 )
             except Exception as e:
