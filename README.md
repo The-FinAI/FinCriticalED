@@ -6,7 +6,7 @@ Annotation, model evaluation, and LLM-as-Judge evaluation framework for FinCriti
 ### 1. Annotation
 ```Annotation``` folder contains post-processing and annotation quality assessments. 
 
-- ```Annotation/Highlight_Annotation.ipynb```: process expert annotations by wrapping financially critical entities with ```<"Number">``` and ```<"Time">``` labels to make it the gold standard for FinCriticalED dataset.
+- ```Annotation/Highlight_Annotation.ipynb```: process expert annotations by wrapping financially critical entities with ```<"Number">``` and ```<"Time">``` labels to make it the gold standard of FinCriticalED dataset.
 
 - ```Annotation/calculate_agreement.py``` and ```Annotation/run_agreement.sh```: calculate overall and pairwise annotator agreement scores to ensure annotation quality
 ### 2. Running Models
