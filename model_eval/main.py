@@ -18,7 +18,7 @@ def evaluate(
     sample=None
 ):
     LOCAL_FILES = {
-        "smallocr": ["OCR_DATA/FinOCRBench_Task1_input.csv"]
+        "smallocr": ["FinCriticalED/FinOCRBench_Task1_input.csv"]
     }
 
     valid_langs = {"smallocr"}
