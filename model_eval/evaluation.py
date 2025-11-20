@@ -15,20 +15,20 @@ def html_to_text(s: str) -> str:
     if s is None or (isinstance(s, float) and pd.isna(s)):
         return ""
     s = str(s)
-    # 不是HTML也直接做基本清洗
+
     if "<" not in s or ">" not in s:
         t = html.unescape(s)
         t = re.sub(r"\s+", " ", t).strip()
         return t
     
-    # 解析 HTML
-    soup = BeautifulSoup(s, "lxml")  # 若无lxml也可用 "html.parser"
-    # 去掉脚本/样式等
+
+    soup = BeautifulSoup(s, "lxml")  # if not lxml then use "html.parser"
+
     for tag in soup(["script", "style", "noscript", "template", "iframe"]):
         tag.decompose()
-    # 提取纯文本
+    # get pure text
     t = soup.get_text(separator=" ", strip=True)
-    # 解码实体 & 规范空白
+    # data clean
     t = html.unescape(t)
     t = re.sub(r"\s+", " ", t).strip()
     return t
@@ -63,10 +63,6 @@ def evaluate_rouge(pred_dir, ground_truths, model_name="gpt-4o",lang='en'):
             if lang == "en":
                 clean_pred = html_to_text(pred)
                 gt = html_to_text(gt)
-            # if lang != "es":
-            #     import re
-            #     clean_pred = re.sub(r"<[^>]+>", " ", pred)
-            #     clean_pred = re.sub(r"\s+", " ", clean_pred).strip()
 
         try:
             rouge_score = rouge.compute(predictions=[clean_pred], references=[gt], use_stemmer=True)
@@ -112,24 +108,11 @@ def run_rouge_eval(
     local_dir = "/gpfs/radev/project/xu_hua/xp83/OCR_Task", 
 ):
     LOCAL_FILES = {
-        "smallocr": ["OCR_DATA/FinOCRBench_Task1_input.csv"],
-        "en": ["OCR_DATA/local_file_version/EnglishOCR_v2.parquet"],
-        "es": [
-            "OCR_DATA/local_file_version/spanish_batch_0000.parquet",
-            "OCR_DATA/local_file_version/spanish_batch_0001.parquet",
-            "OCR_DATA/local_file_version/spanish_batch_0002.parquet",
-        ],
-        "gr": ["OCR_DATA/local_file_version/GreekOCR_v1.parquet"],
-        "jp": ["OCR_DATA/local_file_version/JapaneseOCR_v1.parquet"],
+        "smallocr": ["OCR_DATA/FinOCRBench_Task1_input.csv"]
     }
-    REMOTE_FILES = {
-        "en": ["OCR_DATA/base64_encoded_version/EnglishOCR_3000_000.parquet"],
-        "es": ["OCR_DATA/base64_encoded_version/SpanishOCR_3000_000.parquet"],
-        "gr": ["OCR_DATA/base64_encoded_version/GreekOCR_full_000.parquet"],
-        "jp": ["OCR_DATA/base64_encoded_version/JapaneseOCR_full_000.parquet"],
-    }
+    
 
-    valid_langs = {"smallocr", "en", "es", "gr", "jp"}
+    valid_langs = {"smallocr"}
     if language not in valid_langs:
         raise ValueError(f"Invalid language '{language}'. Choose from {sorted(valid_langs)}.")
         
@@ -138,10 +121,9 @@ def run_rouge_eval(
         if language == "smallocr":
             df = pd.read_csv(paths[0])
         else:
-            dfs = [pd.read_parquet(p) for p in paths]
-            df = pd.concat(dfs, ignore_index=True) if len(dfs) > 1 else dfs[0]
+            print("Invalid Input")
     else:
-        ds = load_dataset("TheFinAI/OCR_Task", data_files=REMOTE_FILES[language])
+        ds = load_dataset("TheFinAI/FinCriticalED", data_files=REMOTE_FILES[language])
         df = ds["train"].to_pandas()
 
     pred_dir = f'./results/{language}/{model_name.replace("/", "-")}_{experiment_tag}'
@@ -183,11 +165,7 @@ def main():
         "gpt-5",
     ]
     languages = [
-        "smallocr",
-        # "en", 
-        # "es",
-        # "gr",
-        # "jp"
+        "smallocr"
     ]
 
     for model in models:
@@ -199,7 +177,7 @@ def main():
                     experiment_tag="zero-shot",
                     language=language,
                     local_version = True, 
-                    local_dir = "/gpfs/radev/project/xu_hua/xp83/OCR_Task", 
+                    local_dir = "./FinCriticalED", 
                 )
             except Exception as e:
                 print(f"⚠️ Error with model {model} in {language}: {e}")
@@ -207,3 +185,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+
