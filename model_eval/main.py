@@ -14,7 +14,7 @@ def evaluate(
     experiment_tag="zero-shot", 
     language="en", 
     local_version=True, 
-    local_dir="./OCR_Task", 
+    local_dir="./FinCriticalED", 
     sample=None
 ):
     LOCAL_FILES = {
@@ -26,10 +26,14 @@ def evaluate(
         raise ValueError(f"Invalid language '{language}'. Choose from {sorted(valid_langs)}.")
 
     paths = [os.path.join(local_dir, p) for p in LOCAL_FILES[language]]
-    if language == "smallocr":
-        df = pd.read_csv(paths[0])
+    if local_version:
+        if language == "smallocr":
+            df = pd.read_csv(paths[0])
+        else:
+            print("Invalid input")
     else:
-        print("Invalid input")
+        ds = load_dataset("TheFinAI/FinCriticalED", data_files=REMOTE_FILES[language])
+        df = ds["train"].to_pandas()
     
     experiment_folder = f'./results/{language}/{model_name.replace("/", "-")}_{experiment_tag}'
     os.makedirs(experiment_folder, exist_ok=True)
