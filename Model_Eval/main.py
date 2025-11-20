@@ -18,37 +18,18 @@ def evaluate(
     sample=None
 ):
     LOCAL_FILES = {
-        "smallocr": ["OCR_DATA/FinOCRBench_Task1_input.csv"],
-        "en": ["OCR_DATA/local_file_version/EnglishOCR_v2.parquet"],
-        "es": [
-            "OCR_DATA/local_file_version/spanish_batch_0000.parquet",
-            "OCR_DATA/local_file_version/spanish_batch_0001.parquet",
-            "OCR_DATA/local_file_version/spanish_batch_0002.parquet",
-        ],
-        "gr": ["OCR_DATA/local_file_version/GreekOCR_v1.parquet"],
-        "jp": ["OCR_DATA/local_file_version/JapaneseOCR_v1.parquet"],
-    }
-    REMOTE_FILES = {
-        "en": ["OCR_DATA/base64_encoded_version/EnglishOCR_3000_000.parquet"],
-        "es": ["OCR_DATA/base64_encoded_version/SpanishOCR_3000_000.parquet"],
-        "gr": ["OCR_DATA/base64_encoded_version/GreekOCR_full_000.parquet"],
-        "jp": ["OCR_DATA/base64_encoded_version/JapaneseOCR_full_000.parquet"],
+        "smallocr": ["OCR_DATA/FinOCRBench_Task1_input.csv"]
     }
 
-    valid_langs = {"smallocr", "en", "es", "gr", "jp"}
+    valid_langs = {"smallocr"}
     if language not in valid_langs:
         raise ValueError(f"Invalid language '{language}'. Choose from {sorted(valid_langs)}.")
-        
-    if local_version:
-        paths = [os.path.join(local_dir, p) for p in LOCAL_FILES[language]]
-        if language == "smallocr":
-            df = pd.read_csv(paths[0])
-        else:
-            dfs = [pd.read_parquet(p) for p in paths]
-            df = pd.concat(dfs, ignore_index=True) if len(dfs) > 1 else dfs[0]
+
+    paths = [os.path.join(local_dir, p) for p in LOCAL_FILES[language]]
+    if language == "smallocr":
+        df = pd.read_csv(paths[0])
     else:
-        ds = load_dataset("TheFinAI/OCR_Task", data_files=REMOTE_FILES[language])
-        df = ds["train"].to_pandas()
+        print("Invalid input")
     
     experiment_folder = f'./results/{language}/{model_name.replace("/", "-")}_{experiment_tag}'
     os.makedirs(experiment_folder, exist_ok=True)
@@ -102,17 +83,12 @@ def main():
         # "Qwen/Qwen-VL-Max",
         # "liuhaotian/llava-v1.6-vicuna-13b",
         # "deepseek-ai/deepseek-vl-7b-chat",
-        
         # "Qwen/Qwen2.5-VL-72B-Instruct",
         # "google/gemma-3n-E4B-it",
         "gpt-5",
     ]
     languages = [
-        "smallocr",
-        # "en", 
-        # "es",
-        # "gr",
-        # "jp"
+        "smallocr"
     ]
 
     for model in models:
