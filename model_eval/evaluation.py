@@ -105,10 +105,10 @@ def run_rouge_eval(
     experiment_tag="zero-shot",
     language="en",
     local_version = True, 
-    local_dir = "/gpfs/radev/project/xu_hua/xp83/OCR_Task", 
+    local_dir = "./FinCriticalED", 
 ):
     LOCAL_FILES = {
-        "smallocr": ["OCR_DATA/FinOCRBench_Task1_input.csv"]
+        "smallocr": ["FinCriticalED/FinOCRBench_Task1_input.csv"]
     }
     
 
@@ -185,4 +185,5 @@ def main():
 
 if __name__ == '__main__':
     main()
+
 
