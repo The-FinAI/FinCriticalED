@@ -1,5 +1,5 @@
 ## FinCriticalED
-Annotation, model evaluation, and llm-as-Judge for FinCriticalED. 
+Annotation, model evaluation, and LLM-as-Judge evaluation framework for FinCriticalED. 
 
 
 ## Repository Structure
