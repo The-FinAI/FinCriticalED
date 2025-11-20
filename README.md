@@ -1,31 +1,48 @@
-# FinCriticalED
-Repo for FinCriticalED
+## FinCriticalED
+Annotation, model evaluation, and llm-as-Judge for FinCriticalED. 
 
 
-# How to use 
-1. Before running gpt, please go to <b>main/lib/agent.py</b> and put in your openai_api_key
-   
-3. Run main/main.py for models to generate OCR output. 
-The model is default to be gpt-4o, and language default to be English. If want to change languagr or model, or only run model on small sample, update this part:
+## Repository Structure
+### 1. Annotation
+```Annotation``` folder contains post-processing and annotation quality assessments. 
+
+- ```Annotation/Highlight_Annotation.ipynb```: process expert annotations by wrapping financially critical entities with ```<"Number">``` and ```<"Time">``` labels to make it the gold standard for FinCriticalED dataset.
+
+- ```Annotation/calculate_agreement.py``` and ```Annotation/run_agreement.sh```: calculate overall and pairwise annotator agreement scores to ensure annotation quality
+### 2. Running Models
+1. Before running models, configure <b>model_eval/agent.py</b> and OPEN_AI_API_KEY for running models
+3. Run ```model_eval/main.py``` to generate model OCR output. 
+To change model, or only run model on small sample, update
+```
+def evaluate(
+    model_name="gpt-4o", 
+    experiment_tag="zero-shot", 
+    language="en", 
+    local_version=True, 
+    local_dir="./FinCriticalED", 
+    sample=None
+):
+```
+### 3. Running Evaluation on traditional OCR metrics
+Upon running main.py, run <b>model_eval/evaluation.py</b> on ROUGE-1,ROUGE-L, Edit Distance. 
+To control input output path, or change models, csv names etc., update
 ```
 def main():
-    evaluate(model_name="gpt-4o",language = "en",local_version = False , sample = 20)
+    models = [
+        ...
+        "Qwen/Qwen2.5-VL-72B-Instruct",
+        "google/gemma-3n-E4B-it",
+        "gpt-5",
+    ]
+    languages = [
+        "smallocr"
+         ...
+    ]
 ```
+### 4. LLM-as-Judge on comparing financial OCR results to gold standards
+In ```llm-as-a-judge.ipynb```, a large language model (GPT-4o) serves as the evaluator responsible for extracting financial facts from the ground-truth HTML and verifying their presence in the model-generated HTML. The LLM Judge processes both inputs under a structured evaluation prompt, enabling it to perform normalization, contextual matching, and fine-grained fact checking.
 
-3. After running main.py, run <b>main/evaluation.py</b> to both output evaluation metrics (ROUGE-1). 
-To control input output path, or change models, csv names etc., please update this part:
-```
-def main():
-    run_rouge_eval(
-        parquet_path="hyr_ocr_process/japanese_output_parquet/japanese_batch_0000.parquet",
-        pred_dir="hyr_results/predictions_japanese/gpt-4o_zero-shot_financial",
-        model_name="gpt-4o",
-        lang = "jp",
-        output_csv="hyr_results/eval_rouge/eval_japanese_gpt_4o_rouge.csv"
-    )
-```
-
-# Dataset
+## Dataset
 - Dataset are available on HuggingFace: [TheFinAI/FinCriticalED](https://huggingface.co/datasets/TheFinAI/FinCriticalED)
 
 
