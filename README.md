@@ -42,3 +42,9 @@ def main():
 ```
 ### 4. LLM-as-Judge on comparing financial OCR results to gold standards
 In ```llm-as-a-judge.ipynb```, a large language model (GPT-4o) serves as the evaluator responsible for extracting financial facts from the ground-truth HTML and verifying their presence in the model-generated HTML. The LLM Judge processes both inputs under a structured evaluation prompt, enabling it to perform normalization, contextual matching, and fine-grained fact checking.
+
+## Dataset
+- Dataset are available on HuggingFace: [TheFinAI/FinCriticalED](https://huggingface.co/datasets/TheFinAI/FinCriticalED)
+
+## Research Paper
+- Paper is available on [Arxiv: 2511.14998](https://arxiv.org/abs/2511.14998)
