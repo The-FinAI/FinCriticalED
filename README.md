@@ -10,8 +10,8 @@ Annotation, model evaluation, and LLM-as-Judge evaluation framework for FinCriti
 
 - ```Annotation/calculate_agreement.py``` and ```Annotation/run_agreement.sh```: calculate overall and pairwise annotator agreement scores to ensure annotation quality
 ### 2. Running Models
-1. Before running models, configure <b>model_eval/agent.py</b> and OPEN_AI_API_KEY for running models
-3. Run ```model_eval/main.py``` to generate model OCR output. 
+1. Before running models, configure <b>model_eval/agent.py</b> and OPEN_AI_API_KEY and TOGETHER_API_KEY for running models
+2. Run ```model_eval/main.py``` to generate model OCR output. 
 To change model, or only run model on small sample, update
 ```
 def evaluate(
@@ -23,6 +23,7 @@ def evaluate(
     sample=None
 ):
 ```
+3. DeepSeek-OCR and and MinerU2.5 can be run seperately in ```model_eval/deepseekocr/batch_process_deepseek.py``` and ```model_eval/miner/batch_process_miner.py```, respectively.
 ### 3. Running Evaluation on traditional OCR metrics
 Upon running main.py, run <b>model_eval/evaluation.py</b> on ROUGE-1,ROUGE-L, Edit Distance. 
 To control input output path, or change models, csv names etc., update
