@@ -24,7 +24,7 @@ model = model.eval().cuda().to(torch.bfloat16)
 
 # Define prompt and paths
 prompt = "<image>\n<|grounding|>Convert this financial statement page into semantically correct HTML. Return html and nothing else. Use plain html only, no styling please."
-csv_file = 'FinOCRBench_Task1_input.csv'
+csv_file = 'raw_input.csv'
 output_path = 'results'
 
 # Create output directory if it doesn't exist
