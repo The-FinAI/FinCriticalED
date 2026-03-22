@@ -1,6 +1,4 @@
-## FinOCRBench
-
-Inference, model evaluation, and LLM-as-Judge evaluation framework for FinOCRBench — a financial document OCR benchmark evaluating vision-language models on HTML reconstruction of SEC filings and other financial documents.
+## FinCriticalED
 
 
 ## Repository Structure
