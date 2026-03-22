@@ -1,127 +1,186 @@
-from transformers import (
-    AutoProcessor,
-    AutoModelForVision2Seq,
-    AutoTokenizer,
-    AutoConfig,
-    AutoModelForCausalLM,
-    BlipProcessor,
-    BlipForConditionalGeneration,
-    BitsAndBytesConfig,
-    Llama4ForConditionalGeneration,
-    Gemma3ForConditionalGeneration,
-    Qwen2_5OmniForConditionalGeneration,
-    Qwen2_5OmniProcessor,
-)
-from qwen_vl_utils import process_vision_info
-from qwen_omni_utils import process_mm_info
-
-# from deepseek_vl.models import VLChatProcessor, MultiModalityCausalLM
-# from deepseek_vl.utils.io import load_pil_images
-
-from PIL import Image
-import torch
-from openai import OpenAI
-from together import Together
+import os
+os.environ["FLAGS_use_mkldnn"] = "0"
+os.environ["FLAGS_enable_pir_api"] = "0"
+os.environ["PADDLE_PDX_DISABLE_MODEL_SOURCE_CHECK"] = "True"
 import base64
 import io
-import os
+import tempfile
+import requests
+
+from PIL import Image
+from dotenv import load_dotenv
+from openai import OpenAI
+
+load_dotenv()
+
+PROMPT = (
+    """
+You are an expert OCR system for financial filings and tabular financial documents.
+
+Transcribe the provided document image into one valid HTML document that faithfully preserves the page content and structure.
+
+The output will be evaluated for exact financially critical OCR accuracy. Do not summarize, interpret, normalize, repair, or complete the content.
+
+Critical field types that must be preserved exactly:
+1. Number: integers, decimals, percentages, signed values, parenthesized values, comma-separated values. Examples: 1,234 ; 10.5 ; 25% ; (500)
+2. Temporal: years, dates, quarters, months, time periods. Examples: 2024 ; December 31, 2023 ; Q1 2025
+3. Monetary Unit: only currency markers and money scale markers, not full amounts. Examples: $ ; US$ ; million ; billion ; thousand
+   - In $500, the monetary unit is $
+   - In US$500 million, the monetary units are US$ and million
+4. Reporting Entity: company names, legal entities, trusts, funds, organizations, subsidiaries, or identifying person names
+5. Financial Concept: accounting and finance-specific concepts or line items. Examples: Revenue ; Net income ; Total assets ; Operating expenses
+
+Critical errors to avoid:
+1. Number Error: changing digits, commas, decimals, signs, parentheses, or percent marks
+2. Temporal Error: changing any date, year, quarter, or time period
+3. Monetary Unit Error: dropping or altering $, US$, million, billion, thousand, etc.
+4. Reporting Entity Error: corrupting or substituting entity/person names
+5. Financial Concept Error: replacing a financial term with a different term
+
+Rules:
+- Preserve exact visible text.
+- Preserve punctuation, capitalization, commas, decimals, symbols, and abbreviations exactly.
+- Do not normalize numbers or dates.
+- Do not convert units.
+- Do not fix spelling.
+- Do not infer missing text.
+- Do not paraphrase.
+- Do not hallucinate.
+- Preserve reading order.
+- Preserve paragraph and heading structure.
+- Preserve table structure with correct rows and columns.
+- Keep values in the correct cells.
+- Use clean semantic HTML only.
+
+Use tags such as: <html>, <body>, <h1>, <h2>, <h3>, <p>, <table>, <tr>, <th>, <td>.
+
+Do not output markdown, code fences, comments, JSON, XML, CSS, JavaScript, or any explanation.
+
+Return exactly one HTML document and nothing else.
+
+"""
+)
+
+TOGETHER_MODELS = frozenset({
+    "google/gemma-3n-E4B-it",
+    "meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8",
+    "moonshotai/Kimi-K2.5",
+})
+
+OPEN_SOURCE_MODELS = frozenset({
+    "Qwen/Qwen2.5-VL-72B-Instruct",
+    "Qwen/Qwen3-VL-32B-Instruct",
+})
+
+GPT_MODELS = frozenset({"gpt-4o", "gpt-5"})
+ANTHROPIC_MODELS = frozenset({"claude-sonnet-4-6"})
+GOOGLE_MODELS = frozenset({"gemini-2.5-pro"})
+OCRPIPELINE_MODELS = frozenset({"monkeyocr", "paddleocr", "paddleocrv5-ppstructure"})
 
 
 class Agent:
     def __init__(self, model_name):
         self.model_name = model_name
-        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-        if "llava" in model_name:
-            bnb_config = BitsAndBytesConfig(load_in_8bit=True)
-            self.processor = AutoProcessor.from_pretrained(
-                "llava-hf/llava-1.5-7b-hf", trust_remote_code=True, use_fast=False
-            )
-            self.model = AutoModelForVision2Seq.from_pretrained(
-                "llava-hf/llava-1.5-7b-hf",
-                trust_remote_code=True,
+        if model_name == "mineru":
+            from transformers import AutoProcessor, Qwen2VLForConditionalGeneration
+            from mineru_vl_utils import MinerUClient
+
+            _model = Qwen2VLForConditionalGeneration.from_pretrained(
+                "opendatalab/MinerU2.5-2509-1.2B",
+                dtype="auto",
                 device_map="auto",
-                torch_dtype=(
-                    torch.bfloat16 if torch.cuda.is_available() else torch.float32
-                ),
-                quantization_config=bnb_config,
-            ).eval()
-
-        elif "finllava" in model_name.lower():
-            bnb_config = BitsAndBytesConfig(load_in_8bit=True)
-            self.processor = AutoProcessor.from_pretrained(
-                "TheFinAI/FinLLaVA", trust_remote_code=True
             )
-            self.model = AutoModelForVision2Seq.from_pretrained(
-                "TheFinAI/FinLLaVA",
-                trust_remote_code=True,
-                device_map="auto",
-                torch_dtype=(
-                    torch.bfloat16 if torch.cuda.is_available() else torch.float32
-                ),
-                quantization_config=bnb_config,
-            ).eval()
+            _processor = AutoProcessor.from_pretrained(
+                "opendatalab/MinerU2.5-2509-1.2B",
+                use_fast=True,
+            )
+            self.mineru_client = MinerUClient(
+                backend="transformers",
+                model=_model,
+                processor=_processor,
+            )
 
-        elif "Qwen2.5-Omni-7B" in self.model_name.lower() or "Qwen-VL-Max" in self.model_name.lower():
+        elif model_name == "deepseekocr":
+            import torch
+            from transformers import AutoModel, AutoTokenizer
 
-            if "omni" in model_name.lower():
-                self.processor = Qwen2_5OmniProcessor.from_pretrained(
-                    "Qwen/Qwen2.5-Omni-7B", trust_remote_code=True
-                )
-                self.model = Qwen2_5OmniForConditionalGeneration.from_pretrained(
-                    "Qwen/Qwen2.5-Omni-7B",
+            _name = "deepseek-ai/DeepSeek-OCR"
+            self.tokenizer = AutoTokenizer.from_pretrained(_name, trust_remote_code=True)
+            if self.tokenizer.pad_token is None:
+                self.tokenizer.pad_token = self.tokenizer.eos_token
+            if self.tokenizer.pad_token_id is None:
+                self.tokenizer.pad_token_id = self.tokenizer.eos_token_id
+            self.model = (
+                AutoModel.from_pretrained(
+                    _name,
+                    _attn_implementation="flash_attention_2",
                     trust_remote_code=True,
-                    device_map="auto",
-                    torch_dtype=(
-                        torch.bfloat16 if torch.cuda.is_available() else torch.float32
-                    ),
-                ).eval()
-
-            else:
-                self.processor = AutoTokenizer.from_pretrained(
-                    "Qwen/Qwen-VL-Max", trust_remote_code=True
+                    use_safetensors=True,
                 )
-                self.model = AutoModelForCausalLM.from_pretrained(
-                    "Qwen/Qwen-VL-Max",
-                    trust_remote_code=True,
-                    device_map="auto",
-                    torch_dtype=(
-                        torch.bfloat16 if torch.cuda.is_available() else torch.float32
-                    ),
-                ).eval()
-
-        elif "deepseek" in model_name:
-            model_path = "deepseek-ai/deepseek-vl-7b-chat"
-
-            self.processor = VLChatProcessor.from_pretrained(
-                model_path, trust_remote_code=True
-            )
-            self.tokenizer = self.processor.tokenizer
-
-            self.model = MultiModalityCausalLM.from_pretrained(
-                model_path,
-                trust_remote_code=True,
-                device_map="auto",
-                torch_dtype=(
-                    torch.bfloat16 if torch.cuda.is_available() else torch.float32
-                ),
-            ).eval()
-
-        elif "qwen" in model_name.lower():
-            self.together_api_key = os.getenv(
-                "TOGETHER_API_KEY"
+                .eval()
+                .cuda()
+                .to(torch.bfloat16)
             )
 
-        elif "gpt-4o" in model_name or "o3-mini" in model_name or "gpt-5" in model_name:
-            self.openai_api_key = os.getenv(
-                "OPENAI_API_KEY"
-            )
+        elif model_name in TOGETHER_MODELS:
+            from together import Together
+            self.client = Together(api_key=os.getenv("TOGETHER_API_KEY"))
+
+        elif model_name in GPT_MODELS:
+            self.client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
+        elif model_name in ANTHROPIC_MODELS:
+            import anthropic
+            self.client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
+
+        elif model_name in GOOGLE_MODELS:
+            import google.generativeai as genai
+            genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
+            self.gemini_model = genai.GenerativeModel(model_name)
+
+        elif model_name in OPEN_SOURCE_MODELS:
+            from transformers import AutoProcessor
+            if model_name == "Qwen/Qwen2.5-VL-72B-Instruct":
+                from transformers import Qwen2_5_VLForConditionalGeneration
+                self.qwen_model = Qwen2_5_VLForConditionalGeneration.from_pretrained(
+                    model_name, torch_dtype="auto", device_map="auto"
+                )
+            else:  # Qwen/Qwen3-VL-32B-Instruct
+                from transformers import Qwen3VLForConditionalGeneration
+                self.qwen_model = Qwen3VLForConditionalGeneration.from_pretrained(
+                    model_name, torch_dtype="auto", device_map="auto"
+                )
+            self.qwen_processor = AutoProcessor.from_pretrained(model_name)
+
+        elif model_name in OCRPIPELINE_MODELS:
+            if model_name == "monkeyocr":
+                self.monkeyocr_url = os.getenv("MONKEYOCR_API_URL", "http://localhost:8000")
+            elif model_name == "paddleocr":
+                import paddle
+                paddle.set_flags({"FLAGS_use_mkldnn": 0, "FLAGS_enable_pir_api": 0})
+                from paddleocr import PaddleOCR
+                self.paddleocr_client = PaddleOCR(
+                    use_doc_orientation_classify=False,
+                    use_doc_unwarping=False,
+                    use_textline_orientation=False,
+                )
+
+            elif model_name == "paddleocrv5-ppstructure":
+                import paddle
+                paddle.set_flags({"FLAGS_use_mkldnn": 0, "FLAGS_enable_pir_api": 0})
+                from paddleocr import TableRecognitionPipelineV2
+                self.ppstructure_client = TableRecognitionPipelineV2()
 
         else:
-            raise ValueError(f"Unsupported model: {model_name}")
+            all_models = (
+                ["mineru", "deepseekocr"]
+                + sorted(TOGETHER_MODELS | OPEN_SOURCE_MODELS | GPT_MODELS
+                         | ANTHROPIC_MODELS | GOOGLE_MODELS | OCRPIPELINE_MODELS)
+            )
+            raise ValueError(f"Unsupported model: {model_name!r}. Supported: {', '.join(all_models)}")
 
     def _is_base64(self, s):
-        """check if inputs are base64 encoded"""
         if not isinstance(s, str) or len(s) < 100:
             return False
         try:
@@ -130,274 +189,158 @@ class Agent:
         except Exception:
             return False
 
-    def draft(self, image_path, local_version=False):
-        if local_version:
+    def _to_pil(self, image_path):
+        if self._is_base64(image_path):
+            data = base64.b64decode(image_path.replace("data:image/png;base64,", ""))
+            return Image.open(io.BytesIO(data)).convert("RGB")
+        return Image.open(image_path).convert("RGB")
+
+    def _to_base64(self, image_path):
+        if self._is_base64(image_path):
+            return image_path.replace("data:image/png;base64,", "")
+        image = Image.open(image_path).convert("RGB")
+        buf = io.BytesIO()
+        image.save(buf, format="PNG")
+        return base64.b64encode(buf.getvalue()).decode("utf-8")
+
+    def draft(self, image_path, local_version=True):
+        if self.model_name == "mineru":
+            image = self._to_pil(image_path)
+            blocks = self.mineru_client.two_step_extract(image)
+            return "\n\n".join(b["content"] for b in blocks)
+
+        elif self.model_name == "deepseekocr":
             if self._is_base64(image_path):
-                image_data = base64.b64decode(image_path.replace("data:image/png;base64,", ""))
-                image = Image.open(io.BytesIO(image_data)).convert("RGB")
+                img = self._to_pil(image_path)
+                tmp = tempfile.NamedTemporaryFile(suffix=".png", delete=False)
+                img.save(tmp.name)
+                file_path = tmp.name
             else:
-                image = Image.open(image_path).convert("RGB")
-        else:
-            image = image_path
+                file_path = image_path
 
-        prompt = "Convert this financial statement page into semantically correct HTML. Return html and nothing else. Use plain html only, no styling please."
+            prompt = f"<image>\n<|grounding|>{PROMPT}"
+            return self.model.infer(
+                self.tokenizer,
+                prompt=prompt,
+                image_file=file_path,
+                output_path=tempfile.gettempdir(),
+                base_size=1024,
+                image_size=640,
+                crop_mode=True,
+                save_results=False,
+                test_compress=True,
+            )
 
-        if "llava" in self.model_name.lower():
-            conversation = [
-                {
+        elif self.model_name in TOGETHER_MODELS:
+            b64 = self._to_base64(image_path)
+            response = self.client.chat.completions.create(
+                model=self.model_name,
+                messages=[{
                     "role": "user",
                     "content": [
-                        {"type": "image", "image": image},
-                        {"type": "text", "text": prompt},
+                        {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{b64}"}},
+                        {"type": "text", "text": PROMPT},
                     ],
-                }
-            ]
-            prompt_str = self.processor.apply_chat_template(
-                conversation,
-                add_generation_prompt=True,
-                tokenize=False,
-            )
-            inputs = self.processor(
-                text=[prompt_str],
-                images=[image],
-                return_tensors="pt",
-            ).to(
-                self.device
-            )
-
-            with torch.no_grad():
-                output = self.model.generate(**inputs, max_new_tokens=2048)[:, inputs["input_ids"].shape[-1]:]
-
-            result = self.processor.tokenizer.decode(
-                output[0], skip_special_tokens=True
-            )
-            return result
-
-        elif "blip" in self.model_name:
-            inputs = self.processor(images=image, text=prompt, return_tensors="pt").to(
-                self.device
-            )
-            with torch.no_grad():
-                output = self.model.generate(**inputs, max_new_tokens=2048)
-            result = self.processor.tokenizer.decode(
-                output[0], skip_special_tokens=True
-            )
-            return result
-
-        elif "Qwen2.5-Omni-7B" in self.model_name.lower() or "Qwen/Qwen-VL-Max" in self.model_name.lower():
-
-            if "omni" in self.model_name.lower():
-                USE_AUDIO_IN_VIDEO = False
-
-                conversation = [
-                    {
-                        "role": "system",
-                        "content": [
-                            {
-                                "type": "text",
-                                "text": "You are Qwen, a virtual human developed by the Qwen Team, Alibaba Group, capable of perceiving auditory and visual inputs, as well as generating text and speech.",
-                            }
-                        ],
-                    },
-                    {
-                        "role": "user",
-                        "content": [
-                            {"type": "text", "text": prompt},
-                            {"type": "image", "image": image_path},
-                        ],
-                    },
-                ]
-
-                text = self.processor.apply_chat_template(
-                    conversation, add_generation_prompt=True, tokenize=False
-                )
-
-                audios, images, videos = process_mm_info(
-                    conversation, use_audio_in_video=USE_AUDIO_IN_VIDEO
-                )
-                inputs = self.processor(
-                    text=text,
-                    audio=audios,
-                    images=images,
-                    # videos=videos,
-                    return_tensors="pt",
-                    padding=True,
-                    use_audio_in_video=USE_AUDIO_IN_VIDEO,
-                )
-                inputs = inputs.to(self.device).to(self.model.dtype)
-
-                with torch.no_grad():
-                    text_ids, audio = self.model.generate(
-                        **inputs, use_audio_in_video=USE_AUDIO_IN_VIDEO,
-                        max_new_tokens=2048
-                    )
-
-                if isinstance(text_ids, (list, tuple)):
-                    text_ids = text_ids[0]
-                result = self.processor.decode(
-                    text_ids,
-                    skip_special_tokens=True,
-                    clean_up_tokenization_spaces=False,
-                )
-
-            else:
-                query = self.processor.from_list_format(
-                    [
-                        {"image": image_path},
-                        {"text": prompt},
-                    ]
-                )
-
-                inputs = self.processor(query, return_tensors="pt").to(self.device)
-
-                with torch.no_grad():
-                    output = self.model.generate(**inputs, max_new_tokens=2048)
-
-                result = self.processor.decode(output[0], skip_special_tokens=True)
-
-            return result
-
-        elif "deepseek" in self.model_name.lower():
-
-            conversation = [
-                {
-                    "role": "User",
-                    "content": f"<image_placeholder>{prompt}",
-                    "images": [f"{image_path}"],
-                },
-                {"role": "Assistant", "content": ""},
-            ]
-
-            pil_images = load_pil_images(conversation)
-
-            prepare_inputs = self.processor(
-                conversations=conversation, images=pil_images, force_batchify=True
-            ).to(
-                self.model.device,
-                torch.bfloat16 if torch.cuda.is_available() else torch.float32
-            )
-
-            with torch.no_grad():
-
-                # run image encoder to get the image embeddings
-                inputs_embeds = self.model.prepare_inputs_embeds(**prepare_inputs)
-
-                # run the model to get the response
-                output = self.model.language_model.generate(
-                    inputs_embeds=inputs_embeds,
-                    attention_mask=prepare_inputs.attention_mask,
-                    pad_token_id=self.tokenizer.eos_token_id,
-                    bos_token_id=self.tokenizer.bos_token_id,
-                    eos_token_id=self.tokenizer.eos_token_id,
-                    max_new_tokens=2048,
-                    do_sample=False,
-                    use_cache=True,
-                )
-
-            result = self.processor.tokenizer.decode(
-                output[0].cpu().tolist(), skip_special_tokens=True
-            )
-
-            return result
-
-        elif "gpt-4o" in self.model_name or "gpt-5" in self.model_name:
-            if local_version:
-                if self._is_base64(image_path):
-                    b64_image = image_path.replace("data:image/png;base64,", "")
-                else:
-                    buffered = io.BytesIO()
-                    image.save(buffered, format="PNG")
-                    img_bytes = buffered.getvalue()
-                    b64_image = base64.b64encode(img_bytes).decode("utf-8")
-            else:
-                b64_image = image_path
-
-            client = OpenAI(
-                # This is the default and can be omitted
-                api_key=self.openai_api_key,
-            )
-            if "gpt-4o" in self.model_name:
-                response = client.chat.completions.create(
-                    model="gpt-4o",
-                    messages=[
-                        {
-                            "role": "user",
-                            "content": [
-                                {
-                                    "type": "image_url",
-                                    "image_url": {
-                                        "url": f"data:image/png;base64,{b64_image}"
-                                    },
-                                },
-                                {"type": "text", "text": prompt},
-                            ],
-                        }
-                    ],
-                    temperature=0,
-                    max_tokens=2048
-                )
-            elif "gpt-5" in self.model_name:
-                response = client.chat.completions.create(
-                    model="gpt-5",
-                    messages=[
-                        {
-                            "role": "user",
-                            "content": [
-                                {
-                                    "type": "image_url",
-                                    "image_url": {
-                                        "url": f"data:image/png;base64,{b64_image}"
-                                    },
-                                },
-                                {"type": "text", "text": prompt},
-                            ],
-                        }
-                    ],
-                    max_completion_tokens=2048
-                )
-            return response.choices[0].message.content
-
-        elif "gemma" in self.model_name.lower() or "llama" in self.model_name.lower() or "qwen" in self.model_name.lower():
-            if "Llama-4-Scout-17B-16E-Instruct" in self.model_name:
-                model_id = "meta-llama/Llama-4-Scout-17B-16E-Instruct"
-            elif "gemma-3-27b-it" in self.model_name:
-                model_id = "google/gemma-3-27b-it"
-            elif "gemma-3n-E4B-it" in self.model_name:
-                model_id = "google/gemma-3n-E4B-it"
-            elif "Qwen2.5-VL-72B-Instruct" in self.model_name:
-                model_id = "Qwen/Qwen2.5-VL-72B-Instruct"
-
-            if local_version:
-                if self._is_base64(image_path):
-                    b64_image = image_path.replace("data:image/png;base64,", "")
-                else:
-                    buffered = io.BytesIO()
-                    image.save(buffered, format="PNG")
-                    img_bytes = buffered.getvalue()
-                    b64_image = base64.b64encode(img_bytes).decode("utf-8")
-            else:
-                b64_image = image_path
-
-            client = Together(
-                api_key=self.together_api_key,
-            )
-            response = client.chat.completions.create(
-                model=model_id,
-                messages=[
-                    {
-                        "role": "user",
-                        "content": [
-                            {
-                                "type": "image_url",
-                                "image_url": {
-                                    "url": f"data:image/png;base64,{b64_image}"
-                                },
-                            },
-                            {"type": "text", "text": prompt},
-                        ],
-                    }
-                ],
+                }],
                 temperature=0,
                 max_tokens=2048,
             )
             return response.choices[0].message.content
+
+        elif self.model_name in GPT_MODELS:
+            b64 = self._to_base64(image_path)
+            messages = [{
+                "role": "user",
+                "content": [
+                    {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{b64}"}},
+                    {"type": "text", "text": PROMPT},
+                ],
+            }]
+            if self.model_name == "gpt-4o":
+                response = self.client.chat.completions.create(
+                    model="gpt-4o", messages=messages, temperature=0, max_tokens=2048
+                )
+            else:
+                response = self.client.chat.completions.create(
+                    model="gpt-5", messages=messages, max_completion_tokens=2048
+                )
+            return response.choices[0].message.content
+
+        elif self.model_name in ANTHROPIC_MODELS:
+            b64 = self._to_base64(image_path)
+            response = self.client.messages.create(
+                model=self.model_name,
+                max_tokens=4096,
+                messages=[{
+                    "role": "user",
+                    "content": [
+                        {"type": "image", "source": {"type": "base64", "media_type": "image/png", "data": b64}},
+                        {"type": "text", "text": PROMPT},
+                    ],
+                }],
+            )
+            return response.content[0].text
+
+        elif self.model_name in GOOGLE_MODELS:
+            img = self._to_pil(image_path)
+            response = self.gemini_model.generate_content([img, PROMPT])
+            return response.text
+
+        elif self.model_name in OPEN_SOURCE_MODELS:
+            from qwen_vl_utils import process_vision_info
+            img = self._to_pil(image_path)
+            messages = [{"role": "user", "content": [
+                {"type": "image", "image": img},
+                {"type": "text", "text": PROMPT},
+            ]}]
+            text = self.qwen_processor.apply_chat_template(
+                messages, tokenize=False, add_generation_prompt=True
+            )
+            image_inputs, video_inputs = process_vision_info(messages)
+            inputs = self.qwen_processor(
+                text=[text], images=image_inputs, videos=video_inputs,
+                padding=True, return_tensors="pt"
+            ).to(self.qwen_model.device)
+            generated_ids = self.qwen_model.generate(**inputs, max_new_tokens=2048)
+            trimmed = [out[len(inp):] for inp, out in zip(inputs.input_ids, generated_ids)]
+            return self.qwen_processor.batch_decode(
+                trimmed, skip_special_tokens=True, clean_up_tokenization_spaces=False
+            )[0]
+
+        elif self.model_name in OCRPIPELINE_MODELS:
+            if self.model_name == "monkeyocr":
+                img = self._to_pil(image_path)  # decodes base64 → PIL (any source format)
+                buf = io.BytesIO()
+                img.save(buf, format="PNG")     # normalise to PNG for MonkeyOCR
+                buf.seek(0)
+                response = requests.post(
+                    f"{self.monkeyocr_url}/ocr/text",
+                    files={"file": ("image.png", buf, "image/png")},
+                )
+                response.raise_for_status()
+                data = response.json()
+                if not data.get("success"):
+                    raise RuntimeError(f"MonkeyOCR error: {data.get('message')}")
+                return data["content"]
+
+            elif self.model_name == "paddleocr":
+                import numpy as np
+                img = self._to_pil(image_path)
+                result = self.paddleocr_client.predict(np.array(img))
+                lines = []
+                for res in result:
+                    lines.extend(res["rec_texts"])
+                return "\n".join(lines)
+
+            elif self.model_name == "paddleocrv5-ppstructure":
+                import numpy as np
+                img = self._to_pil(image_path)
+                result = self.ppstructure_client.predict(np.array(img))
+                parts = []
+                for res in result:
+                    for table in res.get("table_res_list", []):
+                        parts.append(table["pred_html"])
+                    ocr = res.get("overall_ocr_res", {})
+                    for text in ocr.get("rec_texts", []):
+                        parts.append(f"<p>{text}</p>")
+                return f"<html><body>{''.join(parts)}</body></html>"
