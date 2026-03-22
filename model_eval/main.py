@@ -1,115 +1,91 @@
-from lib.agent import Agent
-from lib.tools import Tools
+import os
 import pandas as pd
 from tqdm import tqdm
-import os
-import time
-from datasets import load_dataset
 from dotenv import load_dotenv
+
+from agent import Agent
+
 load_dotenv()
 
+# All supported models. Comment out any you don't want to run.
+MODELS = [
+    ############### OCR Pipeline
+    # "mineru",
+    # "monkeyocr",
+    # "paddleocr",
+    "paddleocrv5-ppstructure",
+    ################# OCR Models
+    # "deepseekocr",
+    # "deepseekocr-2",
+    # ############ Together AI
+    # "google/gemma-3n-E4B-it",
+    # "meta-llama/Llama-4-Scout-17B-16E-Instruct",
+    # "meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8",
+    # "moonshotai/Kimi-K2.5",
+    #  ######### Open Source
+    # "Qwen/Qwen2.5-VL-72B-Instruct",
+    # "Qwen/Qwen3-VL-32B-Instruct",
+    # ############### OpenAI
+    # "gpt-4o",
+    # "gpt-5",
+    # ############### Anthropic
+    # "claude-sonnet-4-6",
+    # ################# Google
+    # "gemini-2.5-pro",
+]
 
-def evaluate(
-    model_name="gpt-4o", 
-    experiment_tag="zero-shot", 
-    language="en", 
-    local_version=True, 
-    local_dir="./FinCriticalED", 
-    sample=None
-):
-    LOCAL_FILES = {
-        "smallocr": ["FinCriticalED/FinOCRBench_Task1_input.csv"]
-    }
+# Path to the evaluation CSV (relative to this script's location)
+DATA_CSV = "./data/raw_input.csv"
 
-    valid_langs = {"smallocr"}
-    if language not in valid_langs:
-        raise ValueError(f"Invalid language '{language}'. Choose from {sorted(valid_langs)}.")
+# Results are written to ../results/smallocr/{model_tag}/pred_{i}.txt
+RESULTS_DIR = "./results"
 
-    paths = [os.path.join(local_dir, p) for p in LOCAL_FILES[language]]
-    if local_version:
-        if language == "smallocr":
-            df = pd.read_csv(paths[0])
-        else:
-            print("Invalid input")
-    else:
-        ds = load_dataset("TheFinAI/FinCriticalED", data_files=REMOTE_FILES[language])
-        df = ds["train"].to_pandas()
-    
-    experiment_folder = f'./results/{language}/{model_name.replace("/", "-")}_{experiment_tag}'
-    os.makedirs(experiment_folder, exist_ok=True)
 
-    # Get predicted indices from filenames
-    predicted_indices = set()
-    if os.path.exists(experiment_folder):
-        for fname in os.listdir(experiment_folder):
-            if fname.startswith(f"pred_") and fname.endswith(".txt"):
-                try:
-                    idx = int(fname.replace(f"pred_", "").replace(".txt", ""))
-                    predicted_indices.add(idx)
-                except:
-                    continue
+def evaluate(model_name, experiment_tag="zero-shot", max_samples=None):
+    df = pd.read_csv(DATA_CSV)
 
-    # Filter out completed predictions
-    # df = df.iloc[900:1000]
-    df = df[~df.index.isin(predicted_indices)]
+    out_dir = os.path.join(RESULTS_DIR, f"{model_name.replace('/', '-')}_{experiment_tag}")
+    os.makedirs(out_dir, exist_ok=True)
 
-    # Apply sample AFTER filtering
-    if sample:
-        df = df.head(sample)  # get sample
+    # Skip already-completed samples
+    done = set()
+    for fname in os.listdir(out_dir):
+        if fname.startswith("pred_") and fname.endswith(".txt"):
+            try:
+                done.add(int(fname[5:-4]))
+            except ValueError:
+                pass
+    df = df[~df.index.isin(done)]
+
+    if max_samples is not None:
+        df = df.head(max_samples)
+
+    if df.empty:
+        print(f"All samples already complete for {model_name}.")
+        return
 
     agent = Agent(model_name)
 
-    for i, row in tqdm(df.iterrows(), total=len(df), desc=f"Running {model_name}"):
-        image_path = row.get("image_path", row.get("image", row.get("data.image")))
-        if language == "smallocr":
-            image_path = image_path
-        else:
-            image_path = os.path.join(local_dir, image_path).replace("./", "").replace("Japanese/", "")
-        output_file = os.path.join(experiment_folder, f"pred_{i}.txt")
-
+    for i, row in tqdm(df.iterrows(), total=len(df), desc=model_name):
+        image_path = row.get("image_path", row.get("image", row.get("image")))
+        out_file = os.path.join(out_dir, f"pred_{i}.txt")
         try:
-            result = agent.draft(image_path, local_version=local_version)
-            with open(output_file, "w", encoding="utf-8") as f:
+            result = agent.draft(image_path, local_version=True)
+            with open(out_file, "w", encoding="utf-8") as f:
                 f.write(result)
-            # time.sleep(1)
         except Exception as e:
-            print(f"⚠️ Error on index {i}: {e}")
-            continue
+            print(f"  Error on index {i}: {e}")
+
 
 def main():
-    models = [
-        # "gpt-4o",
-        # "meta-llama/Llama-4-Scout-17B-16E-Instruct",
-        # "google/gemma-3-4b-it",
-        # "google/gemma-3-27b-it",
-        # "Qwen/Qwen2.5-Omni-7B",
-        # "TheFinAI/FinLLaVA",
-        # "Qwen/Qwen-VL-Max",
-        # "liuhaotian/llava-v1.6-vicuna-13b",
-        # "deepseek-ai/deepseek-vl-7b-chat",
-        # "Qwen/Qwen2.5-VL-72B-Instruct",
-        # "google/gemma-3n-E4B-it",
-        "gpt-5",
-    ]
-    languages = [
-        "smallocr"
-    ]
+    max_samples = None  # Set to an integer to limit samples per model, e.g. max_samples = 10
+    for model in MODELS:
+        print(f"\n=== {model} ===")
+        try:
+            evaluate(model, experiment_tag="zero-shot", max_samples=max_samples)
+        except Exception as e:
+            print(f"  Failed: {e}")
 
-    for model in models:
-        for language in languages:
-            print(f"🟢 Start evaluating {model} in {language}")
-            try:
-                evaluate(
-                    model_name=model,
-                    experiment_tag="zero-shot",
-                    language=language,
-                    local_version = True, 
-                    local_dir = "./FinCritialED", 
-                    sample = 1000
-                )
-            except Exception as e:
-                print(f"⚠️ Error with model {model} in {language}: {e}")
-                continue
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
