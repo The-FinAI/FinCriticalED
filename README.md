@@ -7,7 +7,7 @@
 
 #### 1. Before running models, configure the `MODELS` list in **`main.py`** by uncommenting the model(s) you want to run.
 
-#### 2. Create a `.env` file in `FinOCRBench/code/` with the relevant API keys:
+#### 2. Create a `.env` file in `model_eval/` with the relevant API keys:
 
 ```bash
 OPENAI_API_KEY=...
