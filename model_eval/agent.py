@@ -65,17 +65,15 @@ TOGETHER_MODELS = frozenset({
     "google/gemma-3n-E4B-it",
     "meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8",
     "moonshotai/Kimi-K2.5",
-})
-
-OPEN_SOURCE_MODELS = frozenset({
-    "Qwen/Qwen2.5-VL-72B-Instruct",
-    "Qwen/Qwen3-VL-32B-Instruct",
+    "Qwen/Qwen3.5-397B-A17B",
+    "Qwen/Qwen3-VL-8B-Instruct",
 })
 
 GPT_MODELS = frozenset({"gpt-4o", "gpt-5"})
 ANTHROPIC_MODELS = frozenset({"claude-sonnet-4-6"})
 GOOGLE_MODELS = frozenset({"gemini-2.5-pro"})
-OCRPIPELINE_MODELS = frozenset({"monkeyocr", "paddleocr", "paddleocrv5-ppstructure"})
+GLM_MODELS = frozenset({"glm-4.6v-flash", "glm-ocr"})
+OCRPIPELINE_MODELS = frozenset({"monkeyocr", "paddleocrv5", "paddleocrv5-table"})
 
 
 class Agent:
@@ -139,24 +137,28 @@ class Agent:
             genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
             self.gemini_model = genai.GenerativeModel(model_name)
 
-        elif model_name in OPEN_SOURCE_MODELS:
-            from transformers import AutoProcessor
-            if model_name == "Qwen/Qwen2.5-VL-72B-Instruct":
-                from transformers import Qwen2_5_VLForConditionalGeneration
-                self.qwen_model = Qwen2_5_VLForConditionalGeneration.from_pretrained(
-                    model_name, torch_dtype="auto", device_map="auto"
-                )
-            else:  # Qwen/Qwen3-VL-32B-Instruct
-                from transformers import Qwen3VLForConditionalGeneration
-                self.qwen_model = Qwen3VLForConditionalGeneration.from_pretrained(
-                    model_name, torch_dtype="auto", device_map="auto"
-                )
-            self.qwen_processor = AutoProcessor.from_pretrained(model_name)
+        elif model_name in GLM_MODELS:
+            from zai import ZaiClient
+            self.client = ZaiClient(api_key=os.getenv("ZAI_API_KEY"))
+
+        # elif model_name in OPEN_SOURCE_MODELS:   # old — local HuggingFace Qwen (commented out)
+        #     from transformers import AutoProcessor
+        #     if model_name == "Qwen/Qwen2.5-VL-72B-Instruct":
+        #         from transformers import Qwen2_5_VLForConditionalGeneration
+        #         self.qwen_model = Qwen2_5_VLForConditionalGeneration.from_pretrained(
+        #             model_name, torch_dtype="auto", device_map="auto"
+        #         )
+        #     else:  # Qwen/Qwen3-VL-32B-Instruct
+        #         from transformers import Qwen3VLForConditionalGeneration
+        #         self.qwen_model = Qwen3VLForConditionalGeneration.from_pretrained(
+        #             model_name, torch_dtype="auto", device_map="auto"
+        #         )
+        #     self.qwen_processor = AutoProcessor.from_pretrained(model_name)
 
         elif model_name in OCRPIPELINE_MODELS:
             if model_name == "monkeyocr":
                 self.monkeyocr_url = os.getenv("MONKEYOCR_API_URL", "http://localhost:8000")
-            elif model_name == "paddleocr":
+            elif model_name == "paddleocrv5":
                 import paddle
                 paddle.set_flags({"FLAGS_use_mkldnn": 0, "FLAGS_enable_pir_api": 0})
                 from paddleocr import PaddleOCR
@@ -176,7 +178,7 @@ class Agent:
             all_models = (
                 ["mineru", "deepseekocr"]
                 + sorted(TOGETHER_MODELS | OPEN_SOURCE_MODELS | GPT_MODELS
-                         | ANTHROPIC_MODELS | GOOGLE_MODELS | OCRPIPELINE_MODELS)
+                         | ANTHROPIC_MODELS | GOOGLE_MODELS | GLM_MODELS | OCRPIPELINE_MODELS)
             )
             raise ValueError(f"Unsupported model: {model_name!r}. Supported: {', '.join(all_models)}")
 
@@ -243,7 +245,7 @@ class Agent:
                     ],
                 }],
                 temperature=0,
-                max_tokens=2048,
+                max_tokens=4096,
             )
             return response.choices[0].message.content
 
@@ -286,26 +288,29 @@ class Agent:
             response = self.gemini_model.generate_content([img, PROMPT])
             return response.text
 
-        elif self.model_name in OPEN_SOURCE_MODELS:
-            from qwen_vl_utils import process_vision_info
-            img = self._to_pil(image_path)
-            messages = [{"role": "user", "content": [
-                {"type": "image", "image": img},
-                {"type": "text", "text": PROMPT},
-            ]}]
-            text = self.qwen_processor.apply_chat_template(
-                messages, tokenize=False, add_generation_prompt=True
+        elif self.model_name == "glm-ocr":
+            b64 = self._to_base64(image_path)
+            response = self.client.layout_parsing.create(
+                model="glm-ocr",
+                file=f"data:image/png;base64,{b64}",
             )
-            image_inputs, video_inputs = process_vision_info(messages)
-            inputs = self.qwen_processor(
-                text=[text], images=image_inputs, videos=video_inputs,
-                padding=True, return_tensors="pt"
-            ).to(self.qwen_model.device)
-            generated_ids = self.qwen_model.generate(**inputs, max_new_tokens=2048)
-            trimmed = [out[len(inp):] for inp, out in zip(inputs.input_ids, generated_ids)]
-            return self.qwen_processor.batch_decode(
-                trimmed, skip_special_tokens=True, clean_up_tokenization_spaces=False
-            )[0]
+            return response.md_results
+
+        elif self.model_name in GLM_MODELS:
+            b64 = self._to_base64(image_path)
+            response = self.client.chat.completions.create(
+                model=self.model_name,
+                messages=[{
+                    "role": "user",
+                    "content": [
+                        {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{b64}"}},
+                        {"type": "text", "text": PROMPT},
+                    ],
+                }],
+                temperature=0,
+                max_tokens=4096,
+            )
+            return response.choices[0].message.content
 
         elif self.model_name in OCRPIPELINE_MODELS:
             if self.model_name == "monkeyocr":
@@ -323,7 +328,7 @@ class Agent:
                     raise RuntimeError(f"MonkeyOCR error: {data.get('message')}")
                 return data["content"]
 
-            elif self.model_name == "paddleocr":
+            elif self.model_name == "paddleocrv5":
                 import numpy as np
                 img = self._to_pil(image_path)
                 result = self.paddleocr_client.predict(np.array(img))
@@ -332,7 +337,7 @@ class Agent:
                     lines.extend(res["rec_texts"])
                 return "\n".join(lines)
 
-            elif self.model_name == "paddleocrv5-ppstructure":
+            elif self.model_name == "paddleocrv5-table":
                 import numpy as np
                 img = self._to_pil(image_path)
                 result = self.ppstructure_client.predict(np.array(img))
