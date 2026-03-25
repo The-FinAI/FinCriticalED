@@ -10,25 +10,51 @@ import Levenshtein
 
 rouge = load("rouge")
 
+# All supported models. Comment out any you don't want to evaluate.
+MODELS = [
+    ############### OCR Pipeline
+    # "mineru",
+    # "monkeyocr",
+    "paddleocrv5",
+    # "paddleocrv5-table",
+    ################# OCR Models
+    # "deepseekocr",
+    # ############ Together AI
+    # "google/gemma-3n-E4B-it",
+    # "meta-llama/Llama-4-Scout-17B-16E-Instruct",
+    # "meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8",
+    # "moonshotai/Kimi-K2.5",
+    # "Qwen/Qwen3.5-397B-A17B",          # new — Together AI
+    # "Qwen/Qwen3-VL-8B-Instruct",       # new — Together AI
+    # ############### OpenAI
+    # "gpt-4o",
+    # "gpt-5",
+    # ############### Anthropic
+    # "claude-sonnet-4-6",
+    # ################# Google
+    # "gemini-2.5-pro",
+]
+
+# Path to the evaluation CSV (relative to this script's location)
+DATA_CSV = "./data/raw_input_859.csv"
+
+# Results directory — must match RESULTS_DIR in main.py
+RESULTS_DIR = "./results/MM_2026_Results"
+
 
 def html_to_text(s: str) -> str:
     if s is None or (isinstance(s, float) and pd.isna(s)):
         return ""
     s = str(s)
-
     if "<" not in s or ">" not in s:
         t = html.unescape(s)
         t = re.sub(r"\s+", " ", t).strip()
         return t
     
-
-    soup = BeautifulSoup(s, "lxml")  # if not lxml then use "html.parser"
-
+    soup = BeautifulSoup(s, "lxml")  # 若无lxml也可用 "html.parser"
     for tag in soup(["script", "style", "noscript", "template", "iframe"]):
         tag.decompose()
-    # get pure text
     t = soup.get_text(separator=" ", strip=True)
-    # data clean
     t = html.unescape(t)
     t = re.sub(r"\s+", " ", t).strip()
     return t
@@ -63,6 +89,10 @@ def evaluate_rouge(pred_dir, ground_truths, model_name="gpt-4o",lang='en'):
             if lang == "en":
                 clean_pred = html_to_text(pred)
                 gt = html_to_text(gt)
+            # if lang != "es":
+            #     import re
+            #     clean_pred = re.sub(r"<[^>]+>", " ", pred)
+            #     clean_pred = re.sub(r"\s+", " ", clean_pred).strip()
 
         try:
             rouge_score = rouge.compute(predictions=[clean_pred], references=[gt], use_stemmer=True)
@@ -103,87 +133,41 @@ def evaluate_rouge(pred_dir, ground_truths, model_name="gpt-4o",lang='en'):
 def run_rouge_eval(
     model_name="gpt-4o",
     experiment_tag="zero-shot",
-    language="en",
-    local_version = True, 
-    local_dir = "./FinCriticalED", 
 ):
-    LOCAL_FILES = {
-        "smallocr": ["FinCriticalED/FinOCRBench_Task1_input.csv"]
-    }
-    
+    df = pd.read_csv(DATA_CSV)
 
-    valid_langs = {"smallocr"}
-    if language not in valid_langs:
-        raise ValueError(f"Invalid language '{language}'. Choose from {sorted(valid_langs)}.")
-        
-    if local_version:
-        paths = [os.path.join(local_dir, p) for p in LOCAL_FILES[language]]
-        if language == "smallocr":
-            df = pd.read_csv(paths[0])
-        else:
-            print("Invalid Input")
-    else:
-        ds = load_dataset("TheFinAI/FinCriticalED", data_files=REMOTE_FILES[language])
-        df = ds["train"].to_pandas()
-
-    pred_dir = f'./results/{language}/{model_name.replace("/", "-")}_{experiment_tag}'
+    pred_dir = os.path.join(RESULTS_DIR, f"{model_name.replace('/', '-')}_{experiment_tag}")
 
     # Extract indices from prediction files
     pred_indexes = []
     for fname in os.listdir(pred_dir):
-        if fname.startswith(f"pred_") and fname.endswith(".txt"):
+        if fname.startswith("pred_") and fname.endswith(".txt"):
             try:
-                idx = int(fname.replace(f"pred_", "").replace(".txt", ""))
+                idx = int(fname.replace("pred_", "").replace(".txt", ""))
                 pred_indexes.append(idx)
             except:
                 continue
 
     df = df.loc[df.index.intersection(pred_indexes)]
-    df_eval, df_result = evaluate_rouge(pred_dir, df["data.matched_html"], model_name=model_name, lang=language)
+    df_eval, df_result = evaluate_rouge(pred_dir, df["matched_html"], model_name=model_name, lang="en")
 
-    eval_fp = f'./results/{language}/{model_name.replace("/", "-")}_{experiment_tag}_rouge1_eval.csv'
-    result_fp = f'./results/{language}/{model_name.replace("/", "-")}_{experiment_tag}_rouge1_result.csv'
+    eval_dir = os.path.join(RESULTS_DIR, "evaluation")
+    os.makedirs(eval_dir, exist_ok=True)
+    eval_fp = os.path.join(eval_dir, f"{model_name.replace('/', '-')}_{experiment_tag}_rouge1_eval.csv")
+    result_fp = os.path.join(eval_dir, f"{model_name.replace('/', '-')}_{experiment_tag}_rouge1_result.csv")
     df_eval.to_csv(eval_fp, index=False)
     df_result.to_csv(result_fp, index=False)
-    print(f"✅ Evaluation saved to CSV")
+    print(f"Evaluation saved to CSV")
     return df_eval
 
 def main():
-    models = [
-        "gpt-4o",
-        "meta-llama/Llama-4-Scout-17B-16E-Instruct",
-        # "google/gemma-3-4b-it",
-        # "google/gemma-3-27b-it",
-        # "Qwen/Qwen2.5-Omni-7B",
-        # "TheFinAI/FinLLaVA",
-        # "Qwen/Qwen-VL-Max",
-        # "liuhaotian/llava-v1.6-vicuna-13b",
-        # "deepseek-ai/deepseek-vl-7b-chat",
-        
-        "Qwen/Qwen2.5-VL-72B-Instruct",
-        "google/gemma-3n-E4B-it",
-        "gpt-5",
-    ]
-    languages = [
-        "smallocr"
-    ]
-
-    for model in models:
-        for language in languages:
-            print(f"🟢 Start evaluating {model} in {language}")
-            try:
-                run_rouge_eval(
-                    model_name=model,
-                    experiment_tag="zero-shot",
-                    language=language,
-                    local_version = True, 
-                    local_dir = "./FinCriticalED", 
-                )
-            except Exception as e:
-                print(f"⚠️ Error with model {model} in {language}: {e}")
-                continue
+    for model in MODELS:
+        print(f"\n=== Evaluating {model} ===")
+        try:
+            run_rouge_eval(model_name=model, experiment_tag="zero-shot")
+        except Exception as e:
+            print(f"Error with model {model}: {e}")
+            continue
 
 if __name__ == '__main__':
     main()
-
-
