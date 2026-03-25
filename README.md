@@ -19,7 +19,7 @@ ZAI_API_KEY = ...
 
 #### 3. Run `main.py` to generate model OCR output:
 ```bash
-cd FinOCRBench/code
+cd model_eval
 python main.py
 ```
 - Results are saved to `results/{model_tag}_zero-shot/pred_{i}.txt`. Already-completed samples are skipped on re-runs.
