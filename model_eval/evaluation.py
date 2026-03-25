@@ -33,6 +33,9 @@ MODELS = [
     # "claude-sonnet-4-6",
     # ################# Google
     # "gemini-2.5-pro",
+    # ################# Z.ai
+    "glm-4.6v-flash",
+    # "glm-ocr",
 ]
 
 # Path to the evaluation CSV (relative to this script's location)
