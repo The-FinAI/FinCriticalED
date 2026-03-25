@@ -13,7 +13,7 @@ MODELS = [
     # "mineru",
     # "monkeyocr",
     # "paddleocr",
-    "paddleocrv5-ppstructure",
+    # "paddleocrv5-ppstructure",
     ################# OCR Models
     # "deepseekocr",
     # "deepseekocr-2",
@@ -32,6 +32,9 @@ MODELS = [
     # "claude-sonnet-4-6",
     # ################# Google
     # "gemini-2.5-pro",
+    # ################# Z.ai
+    # "glm-4.6v-flash",
+    "glm-ocr",
 ]
 
 # Path to the evaluation CSV (relative to this script's location)
@@ -67,7 +70,7 @@ def evaluate(model_name, experiment_tag="zero-shot", max_samples=None):
     agent = Agent(model_name)
 
     for i, row in tqdm(df.iterrows(), total=len(df), desc=model_name):
-        image_path = row.get("image_path", row.get("image", row.get("image")))
+        image_path = row.get("image_path", row.get("image", row.get("data.image")))
         out_file = os.path.join(out_dir, f"pred_{i}.txt")
         try:
             result = agent.draft(image_path, local_version=True)
@@ -78,7 +81,7 @@ def evaluate(model_name, experiment_tag="zero-shot", max_samples=None):
 
 
 def main():
-    max_samples = None  # Set to an integer to limit samples per model, e.g. max_samples = 10
+    max_samples = 1 # Set to an integer to limit samples per model, e.g. max_samples = 10
     for model in MODELS:
         print(f"\n=== {model} ===")
         try:
