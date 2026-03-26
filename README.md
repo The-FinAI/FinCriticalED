@@ -1,5 +1,5 @@
 ## FinCriticalED
-
+Recent progress in multimodal large language models (MLLMs) has made document understanding appear increasingly successful~\citep{}, however, even models trained at massive scale may capture the gist of a page while losing the small visual cues that determine whether a statement is actually true. When truth depends on such cues, the question is no longer how well a model summarizes a document, but whether it understands it in any factually meaningful sense. Financial optical character recognition (OCR) makes this boundary unusually sharp. Decimal points, negative markers, unit scales, currency symbols, and row-column alignments can each induce discrete shifts in meaning~\citep{}. These cases therefore expose a fundamental fault line in current MLLMs, whether they preserve the local evidence on which document truth depends, or whether much of their apparent success still rests on semantic approximation. Answering this question is important not only for understanding the real limits of MLLMs, but also for high-stakes financial analysis, where even a single minor extraction error can cascade into materially false interpretations.
 
 ## Repository Structure
 
