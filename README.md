@@ -153,9 +153,9 @@ Set the server URL via environment variable (defaults to `http://localhost:8000`
 ### 2. Running Evaluation
 #### Traditional OCR Metrics
 Upon running `main.py`, run evaluation.py to compute ROUGE-1, ROUGE-L, and Edit Distance metrics:
-
+```python
 python evaluation.py
-
+```
 Results are saved as results/{model_tag}_zero-shot_rouge1_eval.csv.
 
 #### LLM-as-Judge
