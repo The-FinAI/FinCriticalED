@@ -1,7 +1,80 @@
-## FinCriticalED
+<h1 align="center">A Visual Benchmark for Financial Fact-Level OCR Evaluation</h1>
+
+<p align="center">
+  Yueru He, Xueqing Peng*, Yupeng Cao, Yan Wang, Lingfei Qian, Haohang Li, Yi Han, Shuyao Wang, Ruoyu Xiang, Fan Zhang, Zhuohan Xie, Mingquan Lin, Prayag Tiwari, Jimin Huang, Guojun Xiong, Sophia Ananiadou
+</p>
+
+<p align="center">
+  <sup>*</sup>Corresponding author, xueqing.peng2024@gmail.com
+</p>
+
+<p align="center">
+  <a href="https://arxiv.org/abs/2511.14998">📖 Paper</a> •
+  <a href="https://huggingface.co/datasets/TheFinAI/FinCriticalED">🤗 Dataset</a> •
+  <a href="https://github.com/The-FinAI/FinCriticalED">💻 Code</a>
+</p>
+
+<p align="center">
+  <a href="https://arxiv.org/abs/2511.14998"><img src="https://img.shields.io/badge/arXiv-2511.14998-b31b1b.svg" alt="arXiv"></a>
+  <a href="https://huggingface.co/datasets/TheFinAI/FinCriticalED"><img src="https://img.shields.io/badge/🤗-Dataset-yellow" alt="Dataset"></a>
+  <a href="https://github.com/The-FinAI/FinCriticalED/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg" alt="License"></a>
+</p>
+
+
 Recent progress in multimodal large language models (MLLMs) has made document understanding appear increasingly successful~\citep{}, however, even models trained at massive scale may capture the gist of a page while losing the small visual cues that determine whether a statement is actually true. When truth depends on such cues, the question is no longer how well a model summarizes a document, but whether it understands it in any factually meaningful sense. Financial optical character recognition (OCR) makes this boundary unusually sharp. Decimal points, negative markers, unit scales, currency symbols, and row-column alignments can each induce discrete shifts in meaning~\citep{}. These cases therefore expose a fundamental fault line in current MLLMs, whether they preserve the local evidence on which document truth depends, or whether much of their apparent success still rests on semantic approximation. Answering this question is important not only for understanding the real limits of MLLMs, but also for high-stakes financial analysis, where even a single minor extraction error can cascade into materially false interpretations.
 
-## Repository Structure
+## Results
+
+Model performance on FinCriticalED benchmark:
+
+<table>
+  <thead>
+    <tr>
+      <th rowspan="2">Model</th>
+      <th rowspan="2">Size</th>
+      <th colspan="4">General (%)</th>
+      <th colspan="7">Fact-Level (%)</th>
+    </tr>
+    <tr>
+      <th>R1</th><th>RL</th><th>E↓</th><th>Rank</th>
+      <th>N-FFA</th><th>T-FFA</th><th>M-FFA</th><th>R-FFA</th><th>FC-FFA</th><th>FFA</th><th>Rank</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td colspan="13" align="center"><em>OCR Pipelines</em></td></tr>
+    <tr>
+      <td>MinerU2.5</td><td>1.2B</td>
+      <td>-</td><td>-</td><td>-</td><td>-</td>
+      <td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td>
+    </tr>
+    <tr>
+      <td>PP-OCRv5</td><td>0.07B</td>
+      <td>97.54</td><td>96.55</td><td>3.10</td><td>-</td>
+      <td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td>
+    </tr>
+    <tr><td colspan="13" align="center"><em>Specialized OCR VLMs</em></td></tr>
+    <tr><td>DeepSeek-OCR</td><td>6B</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>
+    <tr><td>DeepSeek-OCR-2</td><td>3B</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>
+    <tr><td>GLM-OCR</td><td>0.9B</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>
+    <tr><td colspan="13" align="center"><em>Open-source MLLMs</em></td></tr>
+    <tr><td>Gemma-3n-E4B-it</td><td>4B</td><td>83.49</td><td>79.59</td><td>23.82</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>
+    <tr><td>Qwen3-VL-8B-Instruct</td><td>8B</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>
+    <tr><td>Llama-4-Maverick</td><td>17B</td><td>98.00</td><td>97.62</td><td>3.70</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>
+    <tr><td>Qwen3.5-397B-A17B</td><td>397B</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>
+    <tr><td colspan="13" align="center"><em>Proprietary MLLMs</em></td></tr>
+    <tr><td>GPT-4o</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>
+    <tr><td>GPT-5</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>
+    <tr><td>Claude-Sonnet-4.6</td><td>-</td><td><strong>98.84</strong></td><td><strong>98.73</strong></td><td><strong>1.69</strong></td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>
+    <tr><td>Gemini-2.5-Pro</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>
+  </tbody>
+</table>
+
+> R1 = ROUGE-1, RL = ROUGE-L, E↓ = Edit Distance (lower is better), FFA = Fact-level Financial Accuracy. `-` = results pending.
+
+
+
+
+## Usage
 
 ### 1. Running Models
 
@@ -39,7 +112,6 @@ claude-sonnet-4-6|	Anthropic	|ANTHROPIC_API_KEY
 gemini-2.5-pro|	Google|	GOOGLE_API_KEY
 meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8|	Together AI|	TOGETHER_API_KEY
 Qwen/Qwen2.5-VL-72B-Instruct|	Together AI|	TOGETHER_API_KEY
-moonshotai/Kimi-K2.5|	Together AI	|TOGETHER_API_KEY
 glm-ocr|	ZAI	| ZAI_API_KEY
 
 - Local OCR Pipelines (no API key, local setup required):
@@ -47,10 +119,10 @@ glm-ocr|	ZAI	| ZAI_API_KEY
 Model key in MODELS	|Description
 --- | --- 
 paddleocrv5	|PP-OCRv5 plain text OCR — outputs raw text lines
-paddleocrv5-table	|PP-OCRv5 + table recognition — outputs HTML with `<table>` and `<p>` tags
 monkeyocr	|MonkeyOCR — requires a running local server
 mineru	|MinerU2.5 — runs locally via HuggingFace
 deepseekocr	|DeepSeek-OCR — runs locally via HuggingFace
+deepseekocr2	|DeepSeek-OCR — runs locally via HuggingFace
 
 - Setting up paddleocr and paddleocrv5-ppstructure
 Linux or WSL is required. PaddlePaddle has limited Windows support.
@@ -76,14 +148,29 @@ Set the server URL via environment variable (defaults to `http://localhost:8000`
 `MONKEYOCR_API_URL=http://your-server:8000`
 
 ### 2. Running Evaluation
+#### Traditional OCR Metrics
 Upon running `main.py`, run evaluation.py to compute ROUGE-1, ROUGE-L, and Edit Distance metrics:
 
 python evaluation.py
 
 Results are saved as results/{model_tag}_zero-shot_rouge1_eval.csv.
 
-### 3. LLM-as-Judge
+#### LLM-as-Judge
 
-In llm-as-a-judge-prompt.py, GPT-4o serves as the evaluator responsible for extracting financial entities (Numbers, Dates, Monetary Units, etc.) from the ground-truth HTML and verifying their presence in the model-generated HTML. The LLM Judge performs normalization, contextual matching, and fine-grained fact checking under a structured evaluation prompt.
+In `llm-as-a-judge-prompt.py`, GPT-4o serves as the evaluator responsible for extracting financial entities (Numbers, Dates, Monetary Units, etc.) from the ground-truth HTML and verifying their presence in the model-generated HTML. The LLM Judge performs normalization, contextual matching, and fine-grained fact checking under a structured evaluation prompt.
 
+## Citation
+
+If you find this work useful, please cite:
+
+```bibtex
+@misc{he2025fincriticaledvisualbenchmarkfinancial,
+      title={FinCriticalED: A Visual Benchmark for Financial Fact-Level OCR Evaluation}, 
+      author={Yueru He and Xueqing Peng and Yupeng Cao and Yan Wang and Lingfei Qian and Haohang Li and Yi Han and Ruoyu Xiang and Mingquan Lin and Prayag Tiwari and Jimin Huang and Guojun Xiong and Sophia Ananiadou},
+      year={2025},
+      eprint={2511.14998},
+      archivePrefix={arXiv},
+      primaryClass={cs.CV},
+      url={https://arxiv.org/abs/2511.14998}, 
+}
 
