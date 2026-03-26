@@ -1,4 +1,4 @@
-<h1 align="center">A Visual Benchmark for Financial Fact-Level OCR Evaluation</h1>
+<h1 align="center">FinCriticalED: A Visual Benchmark for Financial Fact-Level OCR Evaluation</h1>
 
 <p align="center">
   Yueru He, Xueqing Peng*, Yupeng Cao, Yan Wang, Lingfei Qian, Haohang Li, Yi Han, Shuyao Wang, Ruoyu Xiang, Fan Zhang, Zhuohan Xie, Mingquan Lin, Prayag Tiwari, Jimin Huang, Guojun Xiong, Sophia Ananiadou
@@ -23,7 +23,7 @@
 
 Recent progress in multimodal large language models (MLLMs) has made document understanding appear increasingly successful~\citep{}, however, even models trained at massive scale may capture the gist of a page while losing the small visual cues that determine whether a statement is actually true. When truth depends on such cues, the question is no longer how well a model summarizes a document, but whether it understands it in any factually meaningful sense. Financial optical character recognition (OCR) makes this boundary unusually sharp. Decimal points, negative markers, unit scales, currency symbols, and row-column alignments can each induce discrete shifts in meaning~\citep{}. These cases therefore expose a fundamental fault line in current MLLMs, whether they preserve the local evidence on which document truth depends, or whether much of their apparent success still rests on semantic approximation. Answering this question is important not only for understanding the real limits of MLLMs, but also for high-stakes financial analysis, where even a single minor extraction error can cascade into materially false interpretations.
 
-## Results
+## 🏆Results
 
 Model performance on FinCriticalED benchmark:
 
@@ -72,9 +72,7 @@ Model performance on FinCriticalED benchmark:
 > R1 = ROUGE-1, RL = ROUGE-L, E↓ = Edit Distance (lower is better), FFA = Fact-level Financial Accuracy. `-` = results pending.
 
 
-
-
-## Usage
+## ⚙️Usage
 
 ### 1. Running Models
 
@@ -159,7 +157,7 @@ Results are saved as results/{model_tag}_zero-shot_rouge1_eval.csv.
 
 In `llm-as-a-judge-prompt.py`, GPT-4o serves as the evaluator responsible for extracting financial entities (Numbers, Dates, Monetary Units, etc.) from the ground-truth HTML and verifying their presence in the model-generated HTML. The LLM Judge performs normalization, contextual matching, and fine-grained fact checking under a structured evaluation prompt.
 
-## Citation
+## 🪶Citation
 
 If you find this work useful, please cite:
 
