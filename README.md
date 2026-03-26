@@ -11,7 +11,7 @@
 <p align="center">
   <a href="https://arxiv.org/abs/2511.14998">📖 Paper</a> •
   <a href="https://huggingface.co/datasets/TheFinAI/FinCriticalED">🤗 Dataset</a> •
-  <a href="https://github.com/The-FinAI/FinCriticalED">💻 Code</a>
+  <a href="https://the-finai.github.io/FinCriticalED/">🌏 WebPage</a>
 </p>
 
 <p align="center">
