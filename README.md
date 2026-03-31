@@ -49,32 +49,33 @@ Model performance on FinCriticalED benchmark:
     <tr><td colspan="13" align="center"><em>OCR Pipelines</em></td></tr>
     <tr>
       <td>MinerU2.5</td><td>1.2B</td>
-      <td>-</td><td>-</td><td>-</td><td>-</td>
-      <td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td>
+      <td>95.71</td><td>95.30</td><td>6.02</td><td>7</td>
+      <td><strong>98.76</strong></td><td>96.48</td><td>54.05</td><td>91.09</td><td>96.44</td><td>94.64</td><td>6</td>
     </tr>
     <tr>
       <td>PP-OCRv5</td><td>0.07B</td>
-      <td>97.54</td><td>96.55</td><td>3.10</td><td>-</td>
-      <td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td>
+      <td>97.54</td><td>96.55</td><td>3.10</td><td>6</td>
+      <td>95.7</td><td>90.29</td><td>90.00</td><td>86.62</td><td>93.75</td><td>91.91</td><td>8</td>
     </tr>
     <tr><td colspan="13" align="center"><em>Specialized OCR VLMs</em></td></tr>
-    <tr><td>DeepSeek-OCR</td><td>6B</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>
-    <tr><td>DeepSeek-OCR-2</td><td>3B</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>
-    <tr><td>GLM-OCR</td><td>0.9B</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>
+    <tr><td>DeepSeekOCR</td><td>3B</td><td>94.73</td><td>94.42</td><td>7.33</td><td>9</td><td>93.47</td><td>91.96</td><td>83.53</td><td>92.27</td><td>94.36</td><td>92.67</td><td>7</td></tr>
+    <tr><td>DeepSeekOCR-2</td><td>6B</td><td>92.90</td><td>92.18</td><td>10.72</td><td>10</td><td>82.63</td><td>91.9</td><td>82.83</td><td>88.69</td><td>86.51</td><td>86.19</td><td>10</td></tr>
+    <tr><td>GLM-OCR</td><td>0.9B</td><td>95.10</td><td>94.74</td><td>6.43</td><td>8</td><td>93.24</td><td><strong>98.53</strong></td><td>88.89</td><td><strong>97.84</strong></td><td><strong>100.00</strong></td><td>96.92</td><td>2</td></tr>
     <tr><td colspan="13" align="center"><em>Open-source MLLMs</em></td></tr>
-    <tr><td>Gemma-3n-E4B-it</td><td>4B</td><td>83.49</td><td>79.59</td><td>23.82</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>
-    <tr><td>Qwen3-VL-8B-Instruct</td><td>8B</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>
-    <tr><td>Llama-4-Maverick</td><td>17B</td><td>98.00</td><td>97.62</td><td>3.70</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>
-    <tr><td>Qwen3.5-397B-A17B</td><td>397B</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>
+    <tr><td>Gemma-3n-E4B-it</td><td>4B</td><td>83.49</td><td>79.59</td><td>23.82</td><td>12</td><td>52.65</td><td>77.06</td><td>64.71</td><td>74.65</td><td>72.86</td><td>65.68</td><td>13</td></tr>
+    <tr><td>Qwen3-VL-8B-Instruct</td><td>8B</td><td>97.68</td><td>97.40</td><td>2.93</td><td>5</td><td>98.47</td><td>96.99</td><td><strong>97.65</strong></td><td>93.18</td><td>99.24</td><td>96.88</td><td>4</td></tr>
+    <tr><td>Llama-4-Maverick</td><td>17B</td><td>98.00</td><td>97.62</td><td>3.70</td><td>4</td><td>97.77</td><td>97.99</td><td><strong>97.65</strong></td><td>94.26</td><td>98.48</td><td>96.48</td><td>3</td></tr>
+    <tr><td>Qwen3.5-397B-A17B</td><td>397B</td><td>98.12</td><td>98.00</td><td>2.59</td><td>3</td><td>87.72</td><td>87.99</td><td>86.14</td><td>91.22</td><td>94.4</td><td>89.70</td><td>9</td></tr>
     <tr><td colspan="13" align="center"><em>Proprietary MLLMs</em></td></tr>
-    <tr><td>GPT-4o</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>
-    <tr><td>GPT-5</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>
-    <tr><td>Claude-Sonnet-4.6</td><td>-</td><td><strong>98.84</strong></td><td><strong>98.73</strong></td><td><strong>1.69</strong></td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>
-    <tr><td>Gemini-2.5-Pro</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>
+    <tr><td>GPT-4o</td><td>-</td><td>90.40</td><td>88.35</td><td>16.01</td><td>11</td><td>59.56</td><td>84.59</td><td>81.92</td><td>81.78</td><td>70.84</td><td>71.68</td><td>12</td></tr>
+    <tr><td>GPT-5</td><td>-</td><td>91.81</td><td>89.56</td><td>15.79</td><td>10</td><td>66.83</td><td>94.48</td><td>92.35</td><td>89.19</td><td>91.77</td><td>81.65</td><td>11</td></tr>
+    <tr><td>Claude-Sonnet-4.6</td><td>-</td><td><strong>98.84</strong></td><td><strong>98.73</strong></td><td><strong>1.69</strong></td><td>1</td><td>98.59</td><td>97.99</td><td>97.06</td><td>94.02</td><td>98.94</td><td><strong>97.23</strong></td><td>1</td></tr>
+    <tr><td>Gemini-2.5-Pro</td><td>-</td><td>98.81</td><td>98.37</td><td>2.46</td><td>2</td><td>97.24</td><td>97.82</td><td><strong>97.65</strong></td><td>94.18</td><td>98.94</td><td>96.74</td><td>5</td></tr>
   </tbody>
 </table>
 
-> R1 = ROUGE-1, RL = ROUGE-L, E↓ = Edit Distance (lower is better), FFA = Fact-level Financial Accuracy. `-` = results pending.
+> R1 = ROUGE-1, RL = ROUGE-L, E↓ = Edit Distance (lower is better), FFA = Fact-level Financial Accuracy. Best results per column in **bold**.
+
 
 
 ## ⚙️Usage
