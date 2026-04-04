@@ -189,16 +189,25 @@
   <h1 class="hero-title">
     <span class="teal">Fin</span><span class="dark">Critical</span><span class="teal">ED</span>:
   </h1>
-  <p class="hero-subtitle">A Visual Benchmark for Financial Fact-Level OCR Evaluation</p>
+  <p class="hero-subtitle">A Visual Benchmark for Financial Fact-Level OCR</p>
 
   <!-- Authors — fill in your names and affiliations -->
   <p class="authors">
-    Yueru He, Xueqing Peng*, Yupeng Cao, Yan Wang, Lingfei Qian, Haohang Li, Yi Han, Shuyao Wang, Ruoyu Xiang, Fan Zhang, Zhuohan Xie, Mingquan Lin, Prayag Tiwari, Jimin Huang, Guojun Xiong, Sophia Ananiadou
+    Yueru He<sup>1</sup>, Xueqing Peng*<sup>3</sup>, Yupeng Cao<sup>2</sup>, Yan Wang<sup>3</sup>, Lingfei Qian<sup>3</sup>, Haohang Li<sup>2</sup>, Yi Han<sup>4</sup>, Shuyao Wang<sup>3</sup>, Ruoyu Xiang<sup>5</sup>, Fan Zhang<sup>6</sup>, Zhuohan Xie<sup>7</sup>, Mingquan Lin<sup>8</sup>, Prayag Tiwari<sup>9</sup>, Jimin Huang<sup>3</sup>, Guojun Xiong<sup>10</sup>, Sophia Ananiadou<sup>11</sup>
   </p>
-  <!-- <p class="affiliations">
-    <sup>1</sup>Institution One &nbsp;&nbsp;
-    <sup>2</sup>Institution Two
-  </p> -->
+  <p class="affiliations">
+    <sup>1</sup>Columbia University, USA &nbsp;&nbsp;
+    <sup>2</sup>Stevens Institute of Technology, USA &nbsp;&nbsp;
+    <sup>3</sup>The Fin AI, USA &nbsp;&nbsp;
+    <sup>4</sup>Georgia Institute of Technology, USA &nbsp;&nbsp;
+    <sup>5</sup>New York University, USA &nbsp;&nbsp;
+    <sup>6</sup>The University of Tokyo &amp; MBZUAI, Japan &amp; UAE &nbsp;&nbsp;
+    <sup>7</sup>MBZUAI, UAE &nbsp;&nbsp;
+    <sup>8</sup>University of Minnesota, USA &nbsp;&nbsp;
+    <sup>9</sup>Halmstad University, Sweden &nbsp;&nbsp;
+    <sup>10</sup>Harvard University, USA &nbsp;&nbsp;
+    <sup>11</sup>University of Manchester, UK
+  </p>
   <p class="corresponding">
     <sup>*</sup>Corresponding author: xueqing.peng2024@gmail.com
   </p>
@@ -222,41 +231,305 @@
 </div>
 
 
+<!-- ═══════════════════════════ TEASER BANNER ══════════════════ -->
+<section style="padding:0; background:#f9f9f9;">
+  <div style="max-width:1200px; margin:0 auto; padding:32px 24px 20px;">
+    <figure style="margin:0; text-align:center;">
+      <img src="fig_ocr.png" alt="FinCriticalED teaser figure"
+           style="width:100%; border-radius:10px; box-shadow:0 3px 18px rgba(0,0,0,0.12);">
+      <figcaption style="margin-top:14px; font-size:0.88rem; color:#555; text-align:left; line-height:1.6;">
+        <strong>Overview of FinCriticalED.</strong>
+        <strong>Left:</strong> Standard OCR metrics fail to capture financially critical semantic errors.
+        <strong>Middle-left:</strong> Construction of a fact-centric dataset with five types of annotated financial facts.
+        <strong>Middle-right:</strong> Evaluation pipeline using OCR/VLM/MLLM outputs with Deterministic-Rule-Guided LLM-as-Judge.
+        <strong>Right:</strong> Key insights from experiments on 13 OCR systems and MLLMs.
+      </figcaption>
+    </figure>
+  </div>
+</section>
+
+
 <!-- ═══════════════════════════ ABSTRACT ═══════════════════════ -->
 <section>
   <div class="container">
     <h2>Abstract</h2>
     <p>
       Recent progress in multimodal large language models (MLLMs) has substantially improved
-      document understanding, yet strong OCR performance on surface metrics does not necessarily
-      imply faithful preservation of decision-critical evidence. This limitation is especially
-      consequential in financial documents, where small visual errors, such as a missing negative
-      marker, shifted decimal point, incorrect unit scale, or misaligned reporting date, can induce
-      materially different interpretations.
+      document understanding, yet strong optical character recognition (OCR) performance on surface
+      metrics does not guarantee faithful preservation of decision-critical evidence. This limitation
+      is especially consequential in financial documents, where small visual errors can induce
+      discrete shifts in meaning. To study this gap, we introduce
+      <strong>FinCriticalED</strong> (<strong>Fin</strong>ancial <strong>Critical</strong>
+      <strong>E</strong>rror <strong>D</strong>etection), a fact-centric visual benchmark for
+      evaluating whether OCR and vision-language systems preserve financially critical evidence
+      beyond lexical similarity.
     </p>
     <p>
-      To study this gap, we introduce <strong>FinCriticalED</strong>
-      (<strong>Fin</strong>ancial <strong>Critical</strong> <strong>E</strong>rror
-      <strong>D</strong>etection), a fact-centric visual benchmark for evaluating OCR and
-      vision-language systems through the lens of evidence fidelity in high-stakes document
-      understanding. <strong>FinCriticalED</strong> contains 859 real-world financial document
-      pages paired with ground-truth HTML, with 9,481 expert-annotated facts spanning five
-      financially critical field types: <em>Numbers</em>, <em>Monetary Units</em>,
-      <em>Temporal Data</em>, <em>Reporting Entities</em>, and <em>Financial Concepts</em>.
+      <strong>FinCriticalED</strong> contains 859 real-world financial document pages with 9,481
+      expert-annotated facts spanning five critical field types: <em>numeric</em>,
+      <em>temporal</em>, <em>monetary unit</em>, <em>reporting entity</em>, and
+      <em>financial concept</em>. We formulate the task as structured OCR with fact-level
+      verification, and develop a Deterministic-Rule-Guided LLM-as-Judge protocol to assess whether
+      model outputs preserve annotated facts in context. We benchmark 13 systems spanning OCR
+      pipelines, specialized OCR VLMs, open-source MLLMs, and proprietary MLLMs.
     </p>
     <p>
-      We further develop an evaluation suite, including critical-field-aware metrics and a
-      context-aware protocol, to assess whether model outputs preserve financially critical facts
-      beyond lexical similarity. We benchmark XX OCR pipelines, OCR-native models, open-source
-      VLMs, and proprietary MLLMs on <strong>FinCriticalED</strong>. Results show that
-      conventional OCR metrics can substantially overestimate factual reliability, and that
-      OCR-specialized systems may outperform much larger general-purpose MLLMs in preserving
-      critical financial evidence under complex layouts. <strong>FinCriticalED</strong> provides
-      a rigorous benchmark for trustworthy financial OCR and a broader testbed for high-stakes
+      Results reveal a clear gap between lexical accuracy and factual reliability, with numerical
+      values and monetary units emerging as the most vulnerable fact types, and critical errors
+      concentrating in visually complex, mixed-layout documents with distinct failure patterns across
+      model families. Overall, <strong>FinCriticalED</strong> provides a rigorous benchmark for
+      trustworthy financial OCR and a practical testbed for evidence fidelity in high-stakes
       multimodal document understanding.
     </p>
   </div>
 </section>
+
+
+<!-- ═══════════════════════════ DATASET ═════════════════════════ -->
+<section>
+  <div class="container">
+    <h2>Dataset</h2>
+
+    <!-- High-level stats bar -->
+    <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:28px;">
+      <div style="background:#f7fafa; border:1px solid #d0e8e4; border-radius:8px; padding:14px 10px; text-align:center;">
+        <p style="font-size:1.7rem; font-weight:800; color:#2a9d8f; margin:0; line-height:1;">859</p>
+        <p style="font-size:0.78rem; color:#666; margin:4px 0 0;">Document pages</p>
+      </div>
+      <div style="background:#f7fafa; border:1px solid #d0e8e4; border-radius:8px; padding:14px 10px; text-align:center;">
+        <p style="font-size:1.7rem; font-weight:800; color:#2a9d8f; margin:0; line-height:1;">9,481</p>
+        <p style="font-size:0.78rem; color:#666; margin:4px 0 0;">Annotated facts</p>
+      </div>
+      <div style="background:#f7fafa; border:1px solid #d0e8e4; border-radius:8px; padding:14px 10px; text-align:center;">
+        <p style="font-size:1.7rem; font-weight:800; color:#2a9d8f; margin:0; line-height:1;">5</p>
+        <p style="font-size:0.78rem; color:#666; margin:4px 0 0;">Critical field types</p>
+      </div>
+      <div style="background:#f7fafa; border:1px solid #d0e8e4; border-radius:8px; padding:14px 10px; text-align:center;">
+        <p style="font-size:1.7rem; font-weight:800; color:#2a9d8f; margin:0; line-height:1;">5</p>
+        <p style="font-size:0.78rem; color:#666; margin:4px 0 0;">Document types</p>
+      </div>
+    </div>
+
+    <!-- Tab buttons -->
+    <div style="display:flex; gap:10px; flex-wrap:wrap; justify-content:center; margin-bottom:24px;">
+      <button class="viz-btn active" onclick="showDataset('ds-annotation', this)">Annotation Process</button>
+      <button class="viz-btn" onclick="showDataset('ds-statistics', this)">Dataset Statistics</button>
+      <button class="viz-btn" onclick="showDataset('ds-fields', this)">Field Type Definitions</button>
+    </div>
+
+    <!-- Tab 1: Dataset Statistics — Table 1 + Table 4 stacked -->
+    <div id="ds-statistics" class="ds-tab" style="display:none;">
+      <div style="display:flex; flex-direction:column; gap:32px;">
+
+        <!-- Table 1: Document Type Distribution -->
+        <div>
+          <p style="font-size:0.85rem; font-weight:700; text-align:center; margin-bottom:10px; color:#264653;">
+            Financial Document Type Distribution
+          </p>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Document Type</th>
+                  <th>Data Source</th>
+                  <th>Examples</th>
+                  <th>Characteristics</th>
+                  <th style="text-align:right;">Size</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Financial Statements</td>
+                  <td>SEC EDGAR</td>
+                  <td>10-K, 10-Q</td>
+                  <td>Dense tables, mixture of modality and formats</td>
+                  <td style="text-align:right;">44</td>
+                </tr>
+                <tr>
+                  <td>SEC Required Filings</td>
+                  <td>SEC EDGAR</td>
+                  <td>Form 4, Form 8-K</td>
+                  <td>Complex table structure</td>
+                  <td style="text-align:right;">142</td>
+                </tr>
+                <tr>
+                  <td>Tax &amp; Compliance Forms</td>
+                  <td>Candid</td>
+                  <td>Tax forms (Form 990)</td>
+                  <td>Cross-page tables and charts</td>
+                  <td style="text-align:right;">11</td>
+                </tr>
+                <tr>
+                  <td>Transaction Records</td>
+                  <td>SEC EDGAR</td>
+                  <td>Securities Transaction Records</td>
+                  <td>Well-structured table, numerically heavy</td>
+                  <td style="text-align:right;">25</td>
+                </tr>
+                <tr>
+                  <td>Financial Legal Documents</td>
+                  <td>SEC EDGAR</td>
+                  <td>M&amp;A agreements, credit agreements, bond indentures</td>
+                  <td>Long-form legal text with embedded financial tables, contract terms</td>
+                  <td style="text-align:right;">637</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Table 4: Fact Distribution -->
+        <div>
+          <p style="font-size:0.85rem; font-weight:700; text-align:center; margin-bottom:10px; color:#264653;">
+            Statistics and Critical Facts Distribution of FinCriticalED
+          </p>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Type</th>
+                  <th style="text-align:right;">Count</th>
+                  <th style="text-align:right;">Avg / Doc</th>
+                  <th style="text-align:right;">%</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr style="font-style:italic; color:#555;">
+                  <td>Dataset Size</td>
+                  <td style="text-align:right;">859</td>
+                  <td style="text-align:right;">–</td>
+                  <td style="text-align:right;">–</td>
+                </tr>
+                <tr>
+                  <td>Numeric Facts (F<sub>n</sub>)</td>
+                  <td style="text-align:right;">2,930</td>
+                  <td style="text-align:right;">3.4</td>
+                  <td style="text-align:right;">30.9</td>
+                </tr>
+                <tr>
+                  <td>Temporal Facts (F<sub>t</sub>)</td>
+                  <td style="text-align:right;">1,144</td>
+                  <td style="text-align:right;">1.3</td>
+                  <td style="text-align:right;">12.1</td>
+                </tr>
+                <tr>
+                  <td>Monetary Units (F<sub>mu</sub>)</td>
+                  <td style="text-align:right;">881</td>
+                  <td style="text-align:right;">1.0</td>
+                  <td style="text-align:right;">9.3</td>
+                </tr>
+                <tr>
+                  <td>Reporting Entities (F<sub>re</sub>)</td>
+                  <td style="text-align:right;">3,142</td>
+                  <td style="text-align:right;">3.7</td>
+                  <td style="text-align:right;">33.1</td>
+                </tr>
+                <tr>
+                  <td>Financial Concepts (F<sub>fc</sub>)</td>
+                  <td style="text-align:right;">1,384</td>
+                  <td style="text-align:right;">1.6</td>
+                  <td style="text-align:right;">14.6</td>
+                </tr>
+                <tr style="font-weight:700; border-top:2px solid #264653;">
+                  <td>Total (F)</td>
+                  <td style="text-align:right;">9,481</td>
+                  <td style="text-align:right;">11.0</td>
+                  <td style="text-align:right;">100.0</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Tab 2: Field Type Definitions -->
+    <div id="ds-fields" class="ds-tab" style="display:none;">
+      <p style="font-size:0.85rem; font-weight:700; text-align:center; margin-bottom:14px; color:#264653;">
+        Financial Critical Fact Types in FinCriticalED
+      </p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th style="width:16%;">Type</th>
+              <th style="width:42%;">Definition</th>
+              <th>Examples</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><em>Numeric Facts</em></td>
+              <td>Quantitative values, including signed numbers, fractions, and percentages</td>
+              <td style="font-family:monospace; font-size:0.83rem;">"2,345"; "0.37"; "1/3"; "-2.3"; "(10,234)"; "25.63%"</td>
+            </tr>
+            <tr>
+              <td><em>Temporal Facts</em></td>
+              <td>Expressions denoting dates, time periods, or durations</td>
+              <td style="font-family:monospace; font-size:0.83rem;">"March 24, 2025"; "Q2 2025"; "1 month"</td>
+            </tr>
+            <tr>
+              <td><em>Monetary Units</em></td>
+              <td>Currency symbols, units, or scale indicators specifying monetary magnitude</td>
+              <td style="font-family:monospace; font-size:0.83rem;">"$"; "US$"; "€"; "million"; "thousand"</td>
+            </tr>
+            <tr>
+              <td><em>Reporting Entities</em></td>
+              <td>Named entities that serve as sources or subjects of reported information</td>
+              <td style="font-family:monospace; font-size:0.83rem;">"JPMorgan Chase &amp; Co."; "Alphabet Inc."; "CEO"</td>
+            </tr>
+            <tr>
+              <td><em>Financial Concepts</em></td>
+              <td>Domain-specific financial or accounting concepts</td>
+              <td style="font-family:monospace; font-size:0.83rem;">"net income"; "operating cash flow"; "EPS"; "accounts receivable"</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Tab 3: Annotation Process -->
+    <div id="ds-annotation" class="ds-tab">
+
+      <!-- IAA stat boxes — horizontal row -->
+      <p style="font-weight:700; color:#264653; margin-bottom:12px;">Inter-Annotator Agreement</p>
+      <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-bottom:24px;">
+        <div style="background:#f7fafa; border:1px solid #d0e8e4; border-radius:8px; padding:14px 18px; text-align:center;">
+          <p style="font-size:1.7rem; font-weight:800; color:#2a9d8f; margin:0; line-height:1;">0.8837</p>
+          <p style="font-size:0.78rem; color:#666; margin:4px 0 0;">Overall Fleiss' &kappa;</p>
+        </div>
+        <div style="background:#f7fafa; border:1px solid #d0e8e4; border-radius:8px; padding:14px 18px; text-align:center;">
+          <p style="font-size:1.7rem; font-weight:800; color:#2a9d8f; margin:0; line-height:1;">0.82–0.93</p>
+          <p style="font-size:0.78rem; color:#666; margin:4px 0 0;">Pairwise Cohen's &kappa; range</p>
+        </div>
+        <div style="background:#f7fafa; border:1px solid #d0e8e4; border-radius:8px; padding:14px 18px; text-align:center;">
+          <p style="font-size:1.7rem; font-weight:800; color:#2a9d8f; margin:0; line-height:1;">4</p>
+          <p style="font-size:0.78rem; color:#666; margin:4px 0 0;">Independent annotators</p>
+        </div>
+      </div>
+
+      <!-- Annotation UI screenshot — full width -->
+      <p style="font-weight:700; color:#264653; margin-bottom:10px;">Annotation Interface (Label Studio)</p>
+      <img src="Annotation_UI.png" alt="Label Studio annotation interface"
+           style="width:100%; border-radius:8px; box-shadow:0 2px 10px rgba(0,0,0,0.10);">
+      <p style="font-size:0.82rem; color:#888; margin-top:8px; line-height:1.5;">
+        Annotators used Label Studio to highlight and label financial critical fields directly on rendered ground truth HTMLs.
+      </p>
+
+    </div>
+
+  </div>
+</section>
+
+<script>
+function showDataset(id, btn) {
+  document.querySelectorAll('.ds-tab').forEach(t => t.style.display = 'none');
+  document.getElementById(id).style.display = 'block';
+  btn.closest('div').querySelectorAll('.viz-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+</script>
 
 
 <!-- ═══════════════════════════ RESULTS ════════════════════════ -->
@@ -269,86 +542,86 @@
           <tr>
             <th rowspan="2">Model</th>
             <th rowspan="2">Size</th>
-            <th colspan="4">General (%)</th>
-            <th colspan="7">Fact-Level (%)</th>
+            <th colspan="3">General (%)</th>
+            <th colspan="6">Fact-Level (%)</th>
           </tr>
           <tr>
-            <th>R1</th><th>RL</th><th>E↓</th><th>Rank</th>
-            <th>N-FFA</th><th>T-FFA</th><th>M-FFA</th><th>R-FFA</th><th>FC-FFA</th><th>FFA</th><th>Rank</th>
+            <th>R1</th><th>RL</th><th>E↓</th>
+            <th>N-FFA</th><th>T-FFA</th><th>M-FFA</th><th>R-FFA</th><th>FC-FFA</th><th>FFA</th>
           </tr>
         </thead>
         <tbody>
-          <tr class="section-row"><td colspan="13">OCR Pipelines</td></tr>
+          <tr class="section-row"><td colspan="11">OCR Pipelines</td></tr>
           <tr>
             <td>MinerU2.5</td><td>1.2B</td>
-            <td>95.71</td><td>95.30</td><td>6.02</td><td>7</td>
-            <td class="best">98.76</td><td>96.48</td><td>54.05</td><td>91.09</td><td>96.44</td><td>94.64</td><td>6</td>
+            <td>95.71</td><td>95.30</td><td>6.02</td>
+            <td class="best">98.76</td><td>96.48</td><td>54.05</td><td>91.09</td><td>96.44</td><td>94.64</td>
           </tr>
           <tr>
             <td>PP-OCRv5</td><td>0.07B</td>
-            <td>97.54</td><td>96.55</td><td>3.10</td><td>6</td>
-            <td>95.7</td><td>90.29</td><td>90.00</td><td>86.62</td><td>93.75</td><td>91.91</td><td>8</td>
+            <td>97.54</td><td>96.55</td><td>3.10</td>
+            <td>95.7</td><td>90.29</td><td>90.00</td><td>86.62</td><td>93.75</td><td>91.91</td>
           </tr>
 
-          <tr class="section-row"><td colspan="13">Specialized OCR VLMs</td></tr>
+          <tr class="section-row"><td colspan="11">Specialized OCR VLMs</td></tr>
           <tr>
             <td>DeepSeekOCR</td><td>3B</td>
-            <td>94.73</td><td>94.42</td><td>7.33</td><td>9</td>
-            <td>93.47</td><td>91.96</td><td>83.53</td><td>92.27</td><td>94.36</td><td>92.67</td><td>7</td>
+            <td>94.73</td><td>94.42</td><td>7.33</td>
+            <td>93.47</td><td>91.96</td><td>83.53</td><td>92.27</td><td>94.36</td><td>92.67</td>
           </tr>
           <tr>
             <td>DeepSeekOCR-2</td><td>6B</td>
-            <td>92.90</td><td>92.18</td><td>10.72</td><td>10</td>
-            <td>82.63</td><td>91.9</td><td>82.83</td><td>88.69</td><td>86.51</td><td>86.19</td><td>10</td>
+            <td>92.90</td><td>92.18</td><td>10.72</td>
+            <td>82.63</td><td>91.9</td><td>82.83</td><td>88.69</td><td>86.51</td><td>86.19</td>
           </tr>
           <tr>
             <td>GLM-OCR</td><td>0.9B</td>
-            <td>95.10</td><td>94.74</td><td>6.43</td><td>8</td>
-            <td>93.24</td><td class="best">98.53</td><td>88.89</td><td class="best">97.84</td><td class="best">100.00</td><td>96.92</td><td>2</td>
+            <td>95.10</td><td>94.74</td><td>6.43</td>
+            <td>93.24</td><td class="best">98.53</td><td>88.89</td><td class="best">97.84</td><td class="best">100.00</td><td>96.92</td>
           </tr>
 
-          <tr class="section-row"><td colspan="13">Open-source MLLMs</td></tr>
+          <tr class="section-row"><td colspan="11">Open-source MLLMs</td></tr>
           <tr>
             <td>Gemma-3n-E4B-it</td><td>4B</td>
-            <td>83.49</td><td>79.59</td><td>23.82</td><td>12</td>
-            <td>52.65</td><td>77.06</td><td>64.71</td><td>74.65</td><td>72.86</td><td>65.68</td><td>13</td>
+            <td>83.49</td><td>79.59</td><td>23.82</td>
+            <td>52.65</td><td>77.06</td><td>64.71</td><td>74.65</td><td>72.86</td><td>65.68</td>
           </tr>
           <tr>
             <td>Qwen3-VL-8B-Instruct</td><td>8B</td>
-            <td>97.68</td><td>97.40</td><td>2.93</td><td>5</td>
-            <td>98.47</td><td>96.99</td><td class="best">97.65</td><td>93.18</td><td>99.24</td><td>96.88</td><td>4</td>
+            <td>97.68</td><td>97.40</td><td>2.93</td>
+            <td>98.47</td><td>96.99</td><td class="best">97.65</td><td>93.18</td><td>99.24</td><td>96.88</td>
           </tr>
           <tr>
             <td>Llama-4-Maverick</td><td>17B</td>
-            <td>98.00</td><td>97.62</td><td>3.70</td><td>4</td>
-            <td>97.77</td><td>97.99</td><td class="best">97.65</td><td>94.26</td><td>98.48</td><td>96.48</td><td>3</td>
+            <td>98.00</td><td>97.62</td><td>3.70</td>
+            <td>97.77</td><td>97.99</td><td class="best">97.65</td><td>94.26</td><td>98.48</td><td>96.48</td>
           </tr>
           <tr>
             <td>Qwen3.5-397B-A17B</td><td>397B</td>
-            <td>98.12</td><td>98.00</td><td>2.59</td><td>3</td>
-            <td>87.72</td><td>87.99</td><td>86.14</td><td>91.22</td><td>94.4</td><td>89.70</td><td>9</td>
+            <td>98.12</td><td>98.00</td><td>2.59</td>
+            <td>87.72</td><td>87.99</td><td>86.14</td><td>91.22</td><td>94.4</td><td>89.70</td>
           </tr>
 
-          <tr class="section-row"><td colspan="13">Proprietary MLLMs</td></tr>
+          <tr class="section-row"><td colspan="11">Proprietary MLLMs</td></tr>
           <tr>
             <td>GPT-4o</td><td>-</td>
-            <td>90.40</td><td>88.35</td><td>16.01</td><td>11</td>
-            <td>59.56</td><td>84.59</td><td>81.92</td><td>81.78</td><td>70.84</td><td>71.68</td><td>12</td>
+            <td>90.40</td><td>88.35</td><td>16.01</td>
+            <td>59.56</td><td>84.59</td><td>81.92</td><td>81.78</td><td>70.84</td><td>71.68</td>
           </tr>
           <tr>
             <td>GPT-5</td><td>-</td>
-            <td>91.81</td><td>89.56</td><td>15.79</td><td>10</td>
-            <td>66.83</td><td>94.48</td><td>92.35</td><td>89.19</td><td>91.77</td><td>81.65</td><td>11</td>
+            <td>91.81</td><td>89.56</td><td>15.79</td>
+            <td>66.83</td><td>94.48</td><td>92.35</td><td>89.19</td><td>91.77</td><td>81.65</td>
           </tr>
           <tr>
             <td>Claude-Sonnet-4.6</td><td>-</td>
-            <td class="best">98.84</td><td class="best">98.73</td><td class="best">1.69</td><td>1</td>
-            <td>98.59</td><td>97.99</td><td>97.06</td><td>94.02</td><td>98.94</td><td class="best">97.23</td><td>1</td>
+            <td class="best">98.84</td><td class="best">98.73</td><td class="best">1.69</td>
+            <td>98.59</td><td>97.99</td><td>97.06</td><td>94.02</td><td>98.94</td><td class="best">97.23</td>
           </tr>
           <tr>
             <td>Gemini-2.5-Pro</td><td>-</td>
-            <td>98.81</td><td>98.37</td><td>2.46</td><td>2</td>
-            <td>97.24</td><td>97.82</td><td class="best">97.65</td><td>94.18</td><td>98.94</td><td>96.74</td><td>5</td>
+            <td>98.81</td><td>98.37</td><td>2.46</td>
+            <td>97.24</td><td>97.82</td><td class="best">97.65</td><td>94.18</td><td>98.94</td><td>96.74</td>
           </tr>
         </tbody>
       </table>
@@ -358,6 +631,159 @@
       FFA = Fact-level Financial Accuracy. Best General (%) results in
       <span style="color:#2a9d8f; font-weight:700;">teal</span>. – = results pending.
     </p>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════ RESULTS INSIGHTS ═══════════════ -->
+<section>
+  <div class="container">
+    <h2>Results Insights</h2>
+    <div style="display:flex; gap:10px; flex-wrap:wrap; justify-content:center; margin-bottom:18px;">
+      <button class="viz-btn active" onclick="showViz('result', 0, this)">Overall Results</button>
+      <button class="viz-btn" onclick="showViz('results_dumbell_v2', 1, this)">Lexical–Factual Gap</button>
+      <button class="viz-btn" onclick="showViz('radar', 2, this)">Per-Field Accuracy Profile</button>
+    </div>
+    <figure style="margin:0; text-align:center;">
+      <img id="viz-img" src="result.png" alt="Visualization"
+           style="max-width:100%; border-radius:8px; box-shadow:0 2px 12px rgba(0,0,0,0.10);">
+      <figcaption id="viz-caption" style="margin-top:12px; font-size:0.88rem; color:#555; max-width:860px; margin-left:auto; margin-right:auto; text-align:left; line-height:1.6;"></figcaption>
+    </figure>
+  </div>
+</section>
+
+<style>
+.viz-btn {
+  padding: 7px 18px;
+  border: 2px solid #2a9d8f;
+  background: #fff;
+  color: #2a9d8f;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 0.88rem;
+  font-weight: 600;
+  transition: background 0.2s, color 0.2s;
+}
+.viz-btn:hover, .viz-btn.active {
+  background: #2a9d8f;
+  color: #fff;
+}
+</style>
+
+<script>
+const vizCaptions = [
+  "<strong>Model performance on general OCR metrics and financial fact-level accuracies.</strong> Best results per metric are highlighted with a star (&#9733;). Notably, the compact GLM-OCR (0.9B) leads on temporal, reporting-entity, and financial-concept facts, demonstrating that model size alone does not determine fact-level reliability, and task-specific training and structured OCR design matter.",
+  "<strong>Large gaps between traditional lexical metrics and fact-level financial accuracy (FFA) reveal that high ROUGE scores do not imply financially faithful extraction.</strong> Across nearly all models, overlap-based metrics (ROUGE-1/L) substantially overestimate factual reliability. The divergence is most pronounced for monetary and numeric fact types, where visually subtle errors, such as a shifted decimal or missing unit symbol, carry outsized semantic consequences despite minimal effect on surface similarity scores.",
+  "<strong>Fact-level accuracy profiles across five financial field types expose distinct strengths and failure modes by model family.</strong>"
+];
+
+function showViz(name, idx, btn) {
+  document.getElementById('viz-img').src = name + '.png';
+  document.getElementById('viz-caption').innerHTML = vizCaptions[idx];
+  document.querySelectorAll('.viz-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+// Set initial caption on load
+document.getElementById('viz-caption').innerHTML = vizCaptions[0];
+</script>
+
+
+<!-- ══════════════════════ MODEL FAILURE ANALYSIS ══════════════ -->
+<section>
+  <div class="container">
+    <h2>Model Failure Analysis</h2>
+    <figure style="margin:0; text-align:center;">
+      <img src="complexity_modality_heatmaps.png" alt="Complexity and modality heatmaps"
+           style="max-width:100%; border-radius:8px; box-shadow:0 2px 12px rgba(0,0,0,0.10);">
+      <figcaption style="margin-top:12px; font-size:0.88rem; color:#555; max-width:860px; margin-left:auto; margin-right:auto; text-align:left; line-height:1.6;">
+        <strong>Critical error rates by document modality and complexity level.</strong>
+        Critical errors are not uniformly distributed; they concentrate in visually complex,
+        mixed-layout documents containing dense tables, multi-column structures, and interleaved
+        text and figures. <em>Mixed</em> pages are consistently the hardest setting. Weaker
+        general-purpose MLLMs exhibit very high critical error rates in this category, with
+        Gemma-3n-E4B-it reaching 100.0% across all complexity levels and GPT models remaining
+        at 80.0%&ndash;100.0%. By contrast, OCR-specialized models are more stable, though not
+        error-free: on <em>text-only</em> pages, DeepSeekOCR rises from 0.0% at low complexity
+        to 23.1% at high complexity, and MinerU2.5 rises from 0.0% to 38.5%. Table-only pages
+        are generally easier when layouts are simple. Overall, the main challenge is OCR under
+        heterogeneous structure rather than OCR alone.
+      </figcaption>
+    </figure>
+
+    <!-- Failure case gallery — switchable tabs -->
+    <h3 style="margin-top:40px; margin-bottom:16px; font-size:1.05rem; color:#264653;">Representative Failure Cases</h3>
+    <div style="display:flex; gap:8px; flex-wrap:wrap; justify-content:center; margin-bottom:18px;">
+      <button class="viz-btn active" onclick="showFailure('fc-mineru', this)">MinerU2.5</button>
+      <button class="viz-btn" onclick="showFailure('fc-ppocr', this)">DeepSeek-OCR</button>
+      <button class="viz-btn" onclick="showFailure('fc-glmocr', this)">Gemma-3n-E4B-it</button>
+      <button class="viz-btn" onclick="showFailure('fc-gemma', this)">Llama-4-Maverick</button>
+      <button class="viz-btn" onclick="showFailure('fc-gpt4o', this)">GPT-4o</button>
+      <button class="viz-btn" onclick="showFailure('fc-claude', this)">GPT-5</button>
+    </div>
+
+    <div id="fc-mineru" class="fc-tab">
+      <figure style="margin:0; text-align:center;">
+        <div style="aspect-ratio:4/3; background:#f0f0f0; border:2px dashed #ccc; border-radius:8px; display:flex; align-items:center; justify-content:center; color:#aaa; font-size:0.88rem;">Image placeholder</div>
+        <figcaption style="margin-top:10px; font-size:0.85rem; color:#555; line-height:1.6; max-width:760px; margin-left:auto; margin-right:auto; text-align:left;">
+          <strong>MinerU2.5</strong> — Failure case description.
+        </figcaption>
+      </figure>
+    </div>
+
+    <div id="fc-ppocr" class="fc-tab" style="display:none;">
+      <figure style="margin:0; text-align:center;">
+        <div style="aspect-ratio:4/3; background:#f0f0f0; border:2px dashed #ccc; border-radius:8px; display:flex; align-items:center; justify-content:center; color:#aaa; font-size:0.88rem;">Image placeholder</div>
+        <figcaption style="margin-top:10px; font-size:0.85rem; color:#555; line-height:1.6; max-width:760px; margin-left:auto; margin-right:auto; text-align:left;">
+          <strong>DeepSeek-OCR</strong> — Failure case description.
+        </figcaption>
+      </figure>
+    </div>
+
+    <div id="fc-glmocr" class="fc-tab" style="display:none;">
+      <figure style="margin:0; text-align:center;">
+        <div style="aspect-ratio:4/3; background:#f0f0f0; border:2px dashed #ccc; border-radius:8px; display:flex; align-items:center; justify-content:center; color:#aaa; font-size:0.88rem;">Image placeholder</div>
+        <figcaption style="margin-top:10px; font-size:0.85rem; color:#555; line-height:1.6; max-width:760px; margin-left:auto; margin-right:auto; text-align:left;">
+          <strong>Gemma-3n-E4B-it</strong> — Failure case description.
+        </figcaption>
+      </figure>
+    </div>
+
+    <div id="fc-gemma" class="fc-tab" style="display:none;">
+      <figure style="margin:0; text-align:center;">
+        <div style="aspect-ratio:4/3; background:#f0f0f0; border:2px dashed #ccc; border-radius:8px; display:flex; align-items:center; justify-content:center; color:#aaa; font-size:0.88rem;">Image placeholder</div>
+        <figcaption style="margin-top:10px; font-size:0.85rem; color:#555; line-height:1.6; max-width:760px; margin-left:auto; margin-right:auto; text-align:left;">
+          <strong>Llama-4-Maverick</strong> — Failure case description.
+        </figcaption>
+      </figure>
+    </div>
+
+    <div id="fc-gpt4o" class="fc-tab" style="display:none;">
+      <figure style="margin:0; text-align:center;">
+        <div style="aspect-ratio:4/3; background:#f0f0f0; border:2px dashed #ccc; border-radius:8px; display:flex; align-items:center; justify-content:center; color:#aaa; font-size:0.88rem;">Image placeholder</div>
+        <figcaption style="margin-top:10px; font-size:0.85rem; color:#555; line-height:1.6; max-width:760px; margin-left:auto; margin-right:auto; text-align:left;">
+          <strong>GPT-4o</strong> — Failure case description.
+        </figcaption>
+      </figure>
+    </div>
+
+    <div id="fc-claude" class="fc-tab" style="display:none;">
+      <figure style="margin:0; text-align:center;">
+        <div style="aspect-ratio:4/3; background:#f0f0f0; border:2px dashed #ccc; border-radius:8px; display:flex; align-items:center; justify-content:center; color:#aaa; font-size:0.88rem;">Image placeholder</div>
+        <figcaption style="margin-top:10px; font-size:0.85rem; color:#555; line-height:1.6; max-width:760px; margin-left:auto; margin-right:auto; text-align:left;">
+          <strong>GPT-5</strong> — Failure case description.
+        </figcaption>
+      </figure>
+    </div>
+
+    <script>
+    function showFailure(id, btn) {
+      document.querySelectorAll('.fc-tab').forEach(t => t.style.display = 'none');
+      document.getElementById(id).style.display = 'block';
+      btn.closest('div').querySelectorAll('.viz-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    }
+    </script>
   </div>
 </section>
 
