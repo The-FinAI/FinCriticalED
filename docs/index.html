@@ -711,69 +711,112 @@ document.getElementById('viz-caption').innerHTML = vizCaptions[0];
       </figcaption>
     </figure>
 
-    <!-- Failure case gallery — switchable tabs -->
+    <!-- Failure case gallery — wide breakout, gold vs model output -->
     <h3 style="margin-top:40px; margin-bottom:16px; font-size:1.05rem; color:#264653;">Representative Failure Cases</h3>
-    <div style="display:flex; gap:8px; flex-wrap:wrap; justify-content:center; margin-bottom:18px;">
-      <button class="viz-btn active" onclick="showFailure('fc-mineru', this)">MinerU2.5</button>
-      <button class="viz-btn" onclick="showFailure('fc-ppocr', this)">DeepSeek-OCR</button>
-      <button class="viz-btn" onclick="showFailure('fc-glmocr', this)">Gemma-3n-E4B-it</button>
-      <button class="viz-btn" onclick="showFailure('fc-gemma', this)">Llama-4-Maverick</button>
-      <button class="viz-btn" onclick="showFailure('fc-gpt4o', this)">GPT-4o</button>
-      <button class="viz-btn" onclick="showFailure('fc-claude', this)">GPT-5</button>
-    </div>
 
-    <div id="fc-mineru" class="fc-tab">
-      <figure style="margin:0; text-align:center;">
-        <div style="aspect-ratio:4/3; background:#f0f0f0; border:2px dashed #ccc; border-radius:8px; display:flex; align-items:center; justify-content:center; color:#aaa; font-size:0.88rem;">Image placeholder</div>
-        <figcaption style="margin-top:10px; font-size:0.85rem; color:#555; line-height:1.6; max-width:760px; margin-left:auto; margin-right:auto; text-align:left;">
-          <strong>MinerU2.5</strong> — Failure case description.
-        </figcaption>
-      </figure>
-    </div>
+    <!-- wider breakout wrapper -->
+    <div style="position:relative; left:50%; transform:translateX(-50%); width:min(1280px, 100vw - 40px); padding:0;">
 
-    <div id="fc-ppocr" class="fc-tab" style="display:none;">
-      <figure style="margin:0; text-align:center;">
-        <div style="aspect-ratio:4/3; background:#f0f0f0; border:2px dashed #ccc; border-radius:8px; display:flex; align-items:center; justify-content:center; color:#aaa; font-size:0.88rem;">Image placeholder</div>
-        <figcaption style="margin-top:10px; font-size:0.85rem; color:#555; line-height:1.6; max-width:760px; margin-left:auto; margin-right:auto; text-align:left;">
-          <strong>DeepSeek-OCR</strong> — Failure case description.
-        </figcaption>
-      </figure>
-    </div>
+      <div style="display:flex; gap:8px; flex-wrap:wrap; justify-content:center; margin-bottom:20px;">
+        <button class="viz-btn active" onclick="showFailure('fc-mineru', this)">MinerU2.5</button>
+        <button class="viz-btn" onclick="showFailure('fc-ppocr', this)">DeepSeek-OCR</button>
+        <button class="viz-btn" onclick="showFailure('fc-glmocr', this)">Gemma-3n-E4B-it</button>
+        <button class="viz-btn" onclick="showFailure('fc-gemma', this)">Llama-4-Maverick</button>
+        <button class="viz-btn" onclick="showFailure('fc-gpt4o', this)">GPT-4o</button>
+        <button class="viz-btn" onclick="showFailure('fc-claude', this)">GPT-5</button>
+      </div>
 
-    <div id="fc-glmocr" class="fc-tab" style="display:none;">
-      <figure style="margin:0; text-align:center;">
-        <div style="aspect-ratio:4/3; background:#f0f0f0; border:2px dashed #ccc; border-radius:8px; display:flex; align-items:center; justify-content:center; color:#aaa; font-size:0.88rem;">Image placeholder</div>
-        <figcaption style="margin-top:10px; font-size:0.85rem; color:#555; line-height:1.6; max-width:760px; margin-left:auto; margin-right:auto; text-align:left;">
-          <strong>Gemma-3n-E4B-it</strong> — Failure case description.
-        </figcaption>
-      </figure>
-    </div>
+      <!-- Column headers -->
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:8px;">
+        <div style="text-align:center; font-size:0.82rem; font-weight:700; color:#2a9d8f; letter-spacing:0.04em; text-transform:uppercase;">✓ Gold Annotation</div>
+        <div style="text-align:center; font-size:0.82rem; font-weight:700; color:#e76f51; letter-spacing:0.04em; text-transform:uppercase;">✗ Model Output</div>
+      </div>
 
-    <div id="fc-gemma" class="fc-tab" style="display:none;">
-      <figure style="margin:0; text-align:center;">
-        <div style="aspect-ratio:4/3; background:#f0f0f0; border:2px dashed #ccc; border-radius:8px; display:flex; align-items:center; justify-content:center; color:#aaa; font-size:0.88rem;">Image placeholder</div>
-        <figcaption style="margin-top:10px; font-size:0.85rem; color:#555; line-height:1.6; max-width:760px; margin-left:auto; margin-right:auto; text-align:left;">
-          <strong>Llama-4-Maverick</strong> — Failure case description.
-        </figcaption>
-      </figure>
-    </div>
+      <div id="fc-mineru" class="fc-tab">
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; align-items:start;">
+          <figure style="margin:0;"><img src="MinrU2.5_39_gold.png" alt="MinerU2.5 gold annotation" style="width:100%; border-radius:8px; border:2px solid #2a9d8f; box-shadow:0 2px 8px rgba(0,0,0,0.08);"></figure>
+          <figure style="margin:0;"><img src="MinrU2.5_39.png" alt="MinerU2.5 model output" style="width:100%; border-radius:8px; border:2px solid #e76f51; box-shadow:0 2px 8px rgba(0,0,0,0.08);"></figure>
+        </div>
+        <p style="margin-top:14px; font-size:0.85rem; color:#555; line-height:1.6;">
+          <strong>MinerU2.5</strong>: MinerU2.5 fails to capture monetary unit signs and introduces noise around mathematical expressions. Dollar signs and currency symbols preceding financial values are dropped, directly degrading Monetary Unit FFA scores. Additionally, mathematical expressions are surrounded by spurious characters introduced during OCR post-processing.
+        </p>
+      </div>
 
-    <div id="fc-gpt4o" class="fc-tab" style="display:none;">
-      <figure style="margin:0; text-align:center;">
-        <div style="aspect-ratio:4/3; background:#f0f0f0; border:2px dashed #ccc; border-radius:8px; display:flex; align-items:center; justify-content:center; color:#aaa; font-size:0.88rem;">Image placeholder</div>
-        <figcaption style="margin-top:10px; font-size:0.85rem; color:#555; line-height:1.6; max-width:760px; margin-left:auto; margin-right:auto; text-align:left;">
-          <strong>GPT-4o</strong> — Failure case description.
-        </figcaption>
-      </figure>
-    </div>
+      <div id="fc-ppocr" class="fc-tab" style="display:none;">
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; align-items:start;">
+          <figure style="margin:0;"><img src="deepseekocr_19_gold.png" alt="DeepSeek-OCR gold annotation" style="width:100%; border-radius:8px; border:2px solid #2a9d8f; box-shadow:0 2px 8px rgba(0,0,0,0.08);"></figure>
+          <figure style="margin:0;"><img src="deepseekocr_19.png" alt="DeepSeek-OCR model output" style="width:100%; border-radius:8px; border:2px solid #e76f51; box-shadow:0 2px 8px rgba(0,0,0,0.08);"></figure>
+        </div>
+        <p style="margin-top:14px; font-size:0.85rem; color:#555; line-height:1.6;">
+          <strong>DeepSeek-OCR</strong>: DeepSeek-OCR systematically omits dollar signs ($) from monetary values. In the ground truth, three annotated monetary facts ($500,000,000, $21,429,000, and $50,001,000) each include the dollar symbol as a critical monetary unit indicator. DeepSeek-OCR strips these symbols, producing bare numeric strings that lose their monetary unit annotation and directly reduce Monetary Unit FFA scores.
+        </p>
+      </div>
+
+      <div id="fc-glmocr" class="fc-tab" style="display:none;">
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; align-items:start;">
+          <figure style="margin:0;"><img src="Gemma-3n-E4B-it_41_gold.png" alt="Gemma-3n-E4B-it gold annotation" style="width:100%; border-radius:8px; border:2px solid #2a9d8f; box-shadow:0 2px 8px rgba(0,0,0,0.08);"></figure>
+          <figure style="margin:0;"><img src="Gemma-3n-E4B-it_41.png" alt="Gemma-3n-E4B-it model output" style="width:100%; border-radius:8px; border:2px solid #e76f51; box-shadow:0 2px 8px rgba(0,0,0,0.08);"></figure>
+        </div>
+        <p style="margin-top:14px; font-size:0.85rem; color:#555; line-height:1.6;">
+          <strong>Gemma-3n-E4B-it</strong>: Gemma-3n-E4B-it exhibits repetition errors in long-form financial text due to hallucination. The model repeats the last sentence of the fourth paragraph verbatim, a failure mode characteristic of autoregressive models that lose track of their generation context over extended passages. 
+        </p>
+      </div>
+
+      <div id="fc-gemma" class="fc-tab" style="display:none;">
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; align-items:start;">
+          <figure style="margin:0;"><img src="Llama-4-Maverick_0_gold.png" alt="Llama-4-Maverick gold annotation" style="width:100%; border-radius:8px; border:2px solid #2a9d8f; box-shadow:0 2px 8px rgba(0,0,0,0.08);"></figure>
+          <figure style="margin:0;"><img src="Llama-4-Maverick_0.png" alt="Llama-4-Maverick model output" style="width:100%; border-radius:8px; border:2px solid #e76f51; box-shadow:0 2px 8px rgba(0,0,0,0.08);"></figure>
+        </div>
+        <p style="margin-top:14px; font-size:0.85rem; color:#555; line-height:1.6;">
+          <strong>Llama-4-Maverick</strong>: Llama-4-Maverick exhibits column misalignment when processing tables with nested header structures. In the ground truth HTML, the "4. Securities Acquired (A) or Disposed Of (D) (Instr. 3, 4 and 5)" column contains three sub-columns. Llama-4-Maverick completely ignores the sub-column headers and captures only top-level header names, causing systematic column misalignment in all subsequent data rows.
+        </p>
+      </div>
+
+      <div id="fc-gpt4o" class="fc-tab" style="display:none;">
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; align-items:start;">
+          <figure style="margin:0;"><img src="gpt-4o_0_gold.png" alt="GPT-4o gold annotation" style="width:100%; border-radius:8px; border:2px solid #2a9d8f; box-shadow:0 2px 8px rgba(0,0,0,0.08);"></figure>
+          <figure style="margin:0;"><img src="gpt-4o_0.png" alt="GPT-4o model output" style="width:100%; border-radius:8px; border:2px solid #e76f51; box-shadow:0 2px 8px rgba(0,0,0,0.08);"></figure>
+        </div>
+        <p style="margin-top:14px; font-size:0.85rem; color:#555; line-height:1.6;">
+          <strong>GPT-4o</strong>: GPT-4o's output is heavily truncated on this SEC Form 4 document even with increased context window. The model refuses to fully process the financial transaction table, likely due to content safety constraints triggered by dense financial disclosure data. The result is a partial rendering that omits transaction details, prices, and entity information present in the ground truth, leading to systematic drops across all FFA metrics on this document.
+        </p>
+      </div>
+
+      <div id="fc-claude" class="fc-tab" style="display:none;">
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; align-items:start;">
+          <figure style="margin:0;"><img src="gpt-5_56_gold.png" alt="GPT-5 gold annotation" style="width:100%; border-radius:8px; border:2px solid #2a9d8f; box-shadow:0 2px 8px rgba(0,0,0,0.08);"></figure>
+          <figure style="margin:0;"><img src="gpt-5_56.png" alt="GPT-5 model output" style="width:100%; border-radius:8px; border:2px solid #e76f51; box-shadow:0 2px 8px rgba(0,0,0,0.08);"></figure>
+        </div>
+        <p style="margin-top:14px; font-size:0.85rem; color:#555; line-height:1.6;">
+          <strong>GPT-5</strong>: GPT-5 exhibits multiple free-form errors on this bond certificate table. The specific certificate rates (4.56% per year for Class A, 4.96% per year for Class B) are hallucinated as the generic label "Fixed rate (per annum)". Precise monetary values for price to public, underwriting discount, and proceeds to transferor are replaced with fabricated placeholders ("See prospectus" or "Not offered") text that does not appear in the source document. A spurious "Summary of terms" heading is also introduced, absent from the ground truth.
+        </p>
+      </div>
+
+    </div><!-- end breakout wrapper -->
+
+    <script>
+    function showFailure(id, btn) {
+      document.querySelectorAll('.fc-tab').forEach(t => t.style.display = 'none');
+      document.getElementById(id).style.display = 'block';
+      btn.closest('div').querySelectorAll('.viz-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    }
+    </script>
 
     <div id="fc-claude" class="fc-tab" style="display:none;">
-      <figure style="margin:0; text-align:center;">
-        <div style="aspect-ratio:4/3; background:#f0f0f0; border:2px dashed #ccc; border-radius:8px; display:flex; align-items:center; justify-content:center; color:#aaa; font-size:0.88rem;">Image placeholder</div>
-        <figcaption style="margin-top:10px; font-size:0.85rem; color:#555; line-height:1.6; max-width:760px; margin-left:auto; margin-right:auto; text-align:left;">
-          <strong>GPT-5</strong> — Failure case description.
-        </figcaption>
-      </figure>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; align-items:start;">
+        <figure style="margin:0;">
+          <img src="gpt-5_56_gold.png" alt="GPT-5 gold annotation"
+               style="width:100%; border-radius:8px; border:2px solid #2a9d8f; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        </figure>
+        <figure style="margin:0;">
+          <img src="gpt-5_56.png" alt="GPT-5 model output"
+               style="width:100%; border-radius:8px; border:2px solid #e76f51; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        </figure>
+      </div>
+      <p style="margin-top:12px; font-size:0.85rem; color:#555; line-height:1.6; text-align:left;">
+        <strong>GPT-5</strong> — Failure case description.
+      </p>
     </div>
 
     <script>
