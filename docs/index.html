@@ -140,6 +140,7 @@
     <a href="#hallucination" style="font-size:0.84rem; color:#264653; padding:3px 10px; border-radius:12px; border:1px solid #ccc; background:#fff; white-space:nowrap; transition:background 0.15s;">Hallucination Analysis</a>
     <a href="#failure"   style="font-size:0.84rem; color:#264653; padding:3px 10px; border-radius:12px; border:1px solid #ccc; background:#fff; white-space:nowrap; transition:background 0.15s;">Model Failure Analysis</a>
     <a href="#complex"   style="font-size:0.84rem; color:#264653; padding:3px 10px; border-radius:12px; border:1px solid #ccc; background:#fff; white-space:nowrap; transition:background 0.15s;">Visually Complex Financial Documents</a>
+    <a href="#limitations" style="font-size:0.84rem; color:#264653; padding:3px 10px; border-radius:12px; border:1px solid #ccc; background:#fff; white-space:nowrap; transition:background 0.15s;">Limitations</a>
     <a href="#citation"  style="font-size:0.84rem; color:#264653; padding:3px 10px; border-radius:12px; border:1px solid #ccc; background:#fff; white-space:nowrap; transition:background 0.15s;">Citation</a>
     <a href="#license"   style="font-size:0.84rem; color:#264653; padding:3px 10px; border-radius:12px; border:1px solid #ccc; background:#fff; white-space:nowrap; transition:background 0.15s;">License</a>
   </div>
@@ -380,13 +381,13 @@
 
             <tr class="section-row"><td colspan="12">Specialized OCR VLMs</td></tr>
             <tr>
-              <td>DeepSeek-OCR</td><td>3B</td><td>98.0</td>
+              <td>DeepSeek-OCR</td><td>6B</td><td>98.0</td>
               <td>94.73</td><td>94.42</td><td>7.33</td>
               <td>93.47<span class="ci-sub">[86.46–98.31]</span></td><td>91.96<span class="ci-sub">[88.75–94.64]</span></td><td>83.53<span class="ci-sub">[74.18–90.68]</span></td><td>92.27<span class="ci-sub">[90.21–94.13]</span></td><td>94.36<span class="ci-sub">[89.15–98.06]</span></td>
               <td>92.67<span class="ci-sub">[89.08–95.30]</span></td>
             </tr>
             <tr>
-              <td>DeepSeek-OCR-2</td><td>6B</td><td>97.9</td>
+              <td>DeepSeek-OCR-2</td><td>3B</td><td>97.9</td>
               <td>92.90</td><td>92.18</td><td>10.72</td>
               <td>82.63<span class="ci-sub">[68.13–94.67]</span></td><td>91.90<span class="ci-sub">[87.48–95.17]</span></td><td>82.83<span class="ci-sub">[71.26–92.09]</span></td><td>88.69<span class="ci-sub">[85.64–91.43]</span></td><td>86.51<span class="ci-sub">[76.12–95.34]</span></td>
               <td>86.19<span class="ci-sub">[78.26–92.46]</span></td>
@@ -429,7 +430,7 @@
               <td>GPT-4o</td><td>–</td><td>84.4</td>
               <td>90.40</td><td>88.35</td><td>16.01</td>
               <td>59.56<span class="ci-sub">[50.40–69.65]</span></td><td>84.59<span class="ci-sub">[78.97–89.56]</span></td><td>81.92<span class="ci-sub">[69.32–91.29]</span></td><td>81.78<span class="ci-sub">[78.03–85.22]</span></td><td>70.84<span class="ci-sub">[59.97–80.67]</span></td>
-              <td>71.67<span class="ci-sub">[65.99–77.36]</span></td>
+              <td>71.68<span class="ci-sub">[65.99–77.36]</span></td>
             </tr>
             <tr>
               <td>GPT-5</td><td>–</td><td>98.8</td>
@@ -537,7 +538,7 @@
             <tr class="section-row"><td colspan="7">Proprietary MLLMs</td></tr>
             <tr>
               <td>GPT-4o</td>
-              <td>71.67<span class="ci-sub">[66.01–77.32]</span></td>
+              <td>71.68<span class="ci-sub">[66.01–77.32]</span></td>
               <td>82.91<span class="ci-sub">[80.00–85.71]</span></td>
               <td>64.46<span class="ci-sub">[51.86–77.90]</span></td>
               <td style="color:#c0392b; font-weight:700;">46.25<span class="ci-sub">[31.81–64.99]</span></td>
@@ -593,7 +594,7 @@
           <li><strong>Tier 1</strong> — GLM-OCR 96.92%, Llama-4-Maverick 96.92% &nbsp;<span style="color:#888;">(not significantly different from each other, p=0.19)</span></li>
           <li><strong>Tier 2</strong> — Claude-Sonnet-4.6 97.23%, Gemini-2.5-Pro 96.74%, Qwen3-VL-8B 96.88% &nbsp;<span style="color:#888;">(all mutually not significant — top-tier cluster, no single winner)</span></li>
           <li><strong>Tier 3</strong> — Qwen2.5-VL-72B 89.70%, GPT-5 81.65%, DeepSeek-OCR 92.67%, DeepSeek-OCR-2 86.19%, MinerU 94.64% &nbsp;<span style="color:#888;">(mutually not significant; significantly below Tier 2)</span></li>
-          <li><strong>Tier 4</strong> — GPT-4o 71.67%, PP-OCRv5 91.91% &nbsp;<span style="color:#888;">(mutually not significant; significantly below Tier 3)</span></li>
+          <li><strong>Tier 4</strong> — GPT-4o 71.68%, PP-OCRv5 91.91% &nbsp;<span style="color:#888;">(mutually not significant; significantly below Tier 3)</span></li>
           <li><strong>Tier 5</strong> — Gemma-3n 65.68% &nbsp;<span style="color:#888;">(significantly below all others)</span></li>
         </ol>
       </div>
@@ -615,7 +616,7 @@
               <th>Q2.5-72B<br><small style="font-weight:400;">89.70</small></th>
               <th>DS-OCR-2<br><small style="font-weight:400;">86.19</small></th>
               <th>GPT-5<br><small style="font-weight:400;">81.65</small></th>
-              <th>GPT-4o<br><small style="font-weight:400;">71.67</small></th>
+              <th>GPT-4o<br><small style="font-weight:400;">71.68</small></th>
               <th>Gemma-3n<br><small style="font-weight:400;">65.68</small></th>
             </tr>
           </thead>
@@ -797,7 +798,7 @@
               <td class="sig-star">***</td>
             </tr>
             <tr>
-              <td style="text-align:left; font-weight:600;">GPT-4o 71.67</td>
+              <td style="text-align:left; font-weight:600;">GPT-4o 71.68</td>
               <td class="sig-star">***</td>
               <td class="sig-star">***</td>
               <td class="sig-star">***</td>
@@ -1332,6 +1333,21 @@
     </div>
 
     
+  </div>
+</section>
+
+
+<!-- ══════════════════════════ LIMITATIONS ═══════════════════ -->
+<section id="limitations">
+  <div class="container">
+    <h2>Limitations</h2>
+    <ul style="line-height:1.9; font-size:0.97rem; color:#333; max-width:820px; margin:0 auto; padding-left:1.4em;">
+      <li><strong>U.S.-centric scope.</strong> The benchmark is drawn exclusively from U.S. financial documents (SEC EDGAR filings, Form 990s). Generalization to non-U.S. regulatory formats and financial conventions has not been evaluated. Multilingual extensions (Japanese FSA, Spanish regulatory filings, Greek stock exchange documents) are ongoing future work.</li>
+      <li><strong>Digital-native documents only.</strong> All pages are digitally rendered from HTML/PDF sources. Real-world scan artifacts (handwriting, print noise, low-resolution captures) are not present. Fact-level errors observed here therefore represent a lower bound; performance on scanned financial documents may be substantially worse.</li>
+      <li><strong>Possible public-filing exposure.</strong> EDGAR filings are publicly indexed and may appear in model pre-training corpora. However, raw-source exposure differs fundamentally from annotation contamination, the more harmful form in which models memorize benchmark labels and evaluation targets
+        <span style="font-size:0.85em; color:#555;"> [<a href="https://aclanthology.org/2023.emnlp-main.722/" target="_blank" style="color:#2a9d8f;">Sainz et al., 2023</a>; <a href="https://arxiv.org/abs/2401.12136" target="_blank" style="color:#2a9d8f;">Li et al., 2024</a>]</span>.
+        FinCriticalED's 9,481 expert-annotated financial facts and evaluation targets were newly created and are not publicly indexed; any EDGAR exposure is therefore at most input-only contamination. Observed omissions, truncations, and hallucinations across document types further suggest that source exposure alone does not explain failures in fact-level evidence preservation.</li>
+    </ul>
   </div>
 </section>
 
